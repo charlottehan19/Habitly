@@ -8,7 +8,7 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
- // Verification code states
+  // Verification code states
   const [enteredDoctorCode, setEnteredDoctorCode] = useState('');
 
   const generateDoctorCode = () => {
@@ -18,8 +18,9 @@ export default function App() {
 
   const [doctorCode] = useState(() => generateDoctorCode());
 
-  // Navigation tabs
+  // Navigation tabs & Sidebar toggle state
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Push notification banner state
   const [notificationBanner, setNotificationBanner] = useState(null);
@@ -236,14 +237,6 @@ export default function App() {
     setNewCustomWorkoutDuration('');
   };
 
-  const handleAddMeal = (e) => {
-    e.preventDefault();
-    if (!newMealName.trim()) return;
-    setNutritionLogs([...nutritionLogs, { id: Date.now(), meal: newMealName, calories: newMealCalories ? `${newMealCalories} kcal` : '350 kcal', protein: '20g', time: 'Just now' }]);
-    setNewMealName('');
-    setNewMealCalories('');
-  };
-
   const simulateFoodScan = () => {
     setIsScanning(true);
     setScanResult(null);
@@ -256,10 +249,10 @@ export default function App() {
   // 1. AUTH SCREEN
   if (!currentUser) {
     return (
-      <div className="flex h-screen items-center justify-center bg-teal-50/50 text-slate-800">
-        <form onSubmit={handleAuthSubmit} className="w-full max-w-md p-8 bg-white rounded-3xl border border-teal-100 shadow-2xl shadow-teal-900/10">
+      <div className="flex h-[100dvh] items-center justify-center bg-teal-50/50 text-slate-800 p-4">
+        <form onSubmit={handleAuthSubmit} className="w-full max-w-md p-6 sm:p-8 bg-white rounded-3xl border border-teal-100 shadow-2xl shadow-teal-900/10">
           <div className="flex flex-col items-center mb-6">
-            <img src="/logo.jpg" alt="Habitly Logo" className="w-24 h-24 object-contain mb-3 rounded-2xl shadow-sm" />
+            <img src="/logo.jpg" alt="Habitly Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 rounded-2xl shadow-sm" />
           </div>
 
           <div className="grid grid-cols-2 gap-1 bg-teal-50/60 p-1 rounded-xl mb-6 border border-teal-100">
@@ -373,14 +366,21 @@ export default function App() {
     const selectedPatient = patientsList.find(p => p.id === selectedPatientId) || patientsList[0];
 
     return (
-      <div className="flex h-screen bg-teal-50/30 text-slate-800 overflow-hidden">
-        <div className="w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-sm">
+      <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
+        {/* Backdrop overlay when sidebar drawer is open */}
+        {sidebarOpen && (
+          <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+        )}
+        
+        {/* Toggleable Slide-over Sidebar for Doctor */}
+        <div className={`absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div>
-            <div className="flex items-center space-x-3 mb-6">
-              <img src="/logo.jpg" alt="Habitly Logo" className="w-12 h-12 object-contain rounded-xl" />
-              <div>
-                <span className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Doctor Portal</span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <img src="/logo.jpg" alt="Habitly Logo" className="w-10 h-10 object-contain rounded-xl" />
+                <span className="text-xs text-teal-600 font-bold uppercase tracking-wider">Doctor Portal</span>
               </div>
+              <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-teal-900 text-lg font-bold">✕</button>
             </div>
 
             <div className="bg-teal-50 p-3 rounded-xl border border-teal-100 mb-6 text-xs">
@@ -393,7 +393,7 @@ export default function App() {
               {patientsList.map((pat) => (
                 <button
                   key={pat.id}
-                  onClick={() => setSelectedPatientId(pat.id)}
+                  onClick={() => { setSelectedPatientId(pat.id); setSidebarOpen(false); }}
                   className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${
                     selectedPatientId === pat.id 
                       ? 'bg-teal-600 border-teal-600 text-white shadow-md' 
@@ -419,19 +419,24 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex-1 bg-teal-50/20 p-8 overflow-y-auto flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-teal-950">Patient File: {selectedPatient?.name}</h1>
-              <p className="text-xs text-slate-500">Secure overview and direct communication channel.</p>
+        <div className="flex-1 bg-teal-50/20 p-4 sm:p-8 overflow-y-auto flex flex-col">
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <div className="flex items-center space-x-3">
+              <button onClick={() => setSidebarOpen(true)} className="p-2 bg-white border border-teal-200 rounded-xl text-teal-900 font-bold shadow-sm flex items-center gap-1.5 hover:bg-teal-50 transition-all">
+                <span>☰</span> Patients
+              </button>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-teal-950">Patient File: {selectedPatient?.name}</h1>
+                <p className="text-xs text-slate-500">Secure overview and direct communication channel.</p>
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div className="hidden sm:flex gap-2">
               <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Sleep: {selectedPatient?.metrics.sleep}</span>
               <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Hydration: {selectedPatient?.metrics.hydration}</span>
             </div>
           </div>
 
-          <div className="flex-1 bg-white border border-teal-100 rounded-2xl p-6 flex flex-col shadow-lg shadow-teal-950/5">
+          <div className="flex-1 bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 flex flex-col shadow-lg shadow-teal-950/5">
             <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
               <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Direct Messaging</span>
               <span className="text-xs text-teal-600 font-medium">● Secure Channel</span>
@@ -480,8 +485,19 @@ export default function App() {
   // 3. PATIENT OR PERSONAL VIEW
   const currentPatientData = patientsList.find(p => p.name === currentUser.name) || patientsList[0];
 
+  const navTabs = [
+    { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊', shortLabel: 'Home' },
+    { id: 'habits', label: '✅ Daily Habits', mobileIcon: '✅', shortLabel: 'Habits' },
+    { id: 'mood', label: '😊 Mood Tracker', mobileIcon: '😊', shortLabel: 'Mood' },
+    { id: 'substance', label: '🚬 Substance Tracker', mobileIcon: '🚬', shortLabel: 'Substance' },
+    { id: 'nutrition', label: '🥗 Food & Nutrition', mobileIcon: '🥗', shortLabel: 'Nutrition' },
+    { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
+    { id: 'reminders', label: '⏰ Reminders & Notifs', mobileIcon: '⏰', shortLabel: 'Reminders' },
+    ...(currentUser.role === 'patient' ? [{ id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' }] : [])
+  ];
+
   return (
-    <div className="flex h-screen bg-teal-50/30 text-slate-800 overflow-hidden relative">
+    <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
       
       {/* Phone Notification Banner Toast */}
       {notificationBanner && (
@@ -491,27 +507,24 @@ export default function App() {
         </div>
       )}
 
-      {/* Sidebar Navigation */}
-      <div className="w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-sm">
+      {/* Backdrop overlay when sidebar drawer is open */}
+      {sidebarOpen && (
+        <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Fully Collapsible Slide-over Sidebar Navigation */}
+      <div className={`absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div>
-          <div className="flex items-center space-x-3 mb-8">
-            <img src="/logo.jpg" alt="Habitly Logo" className="w-full h-14 object-contain" />
+          <div className="flex items-center justify-between mb-8">
+            <img src="/logo.jpg" alt="Habitly Logo" className="w-32 h-12 object-contain" />
+            <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-teal-900 text-lg font-bold">✕</button>
           </div>
           
           <nav className="space-y-1.5 text-sm font-medium text-slate-600">
-            {[
-              { id: 'dashboard', label: '📊 Dashboard' },
-              { id: 'habits', label: '✅ Daily Habits' },
-              { id: 'mood', label: '😊 Mood Tracker' },
-              { id: 'substance', label: '🚬 Substance Tracker' },
-              { id: 'nutrition', label: '🥗 Food & Nutrition' },
-              { id: 'exercise', label: '⏱️ Exercise Planner' },
-              { id: 'reminders', label: '⏰ Reminders & Notifs' },
-              ...(currentUser.role === 'patient' ? [{ id: 'doctor', label: '🩺 Doctor Chat' }] : [])
-            ].map(tab => (
+            {navTabs.map(tab => (
               <button 
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)} 
+                onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} 
                 className={`w-full text-left py-2.5 px-3 rounded-xl transition-colors ${activeTab === tab.id ? 'bg-teal-50 border border-teal-200/60 text-teal-800 font-semibold shadow-sm' : 'hover:bg-teal-50 hover:text-teal-900'}`}
               >
                 {tab.label}
@@ -534,460 +547,413 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 bg-teal-50/20 p-8 overflow-y-auto">
+      {/* Main Content Area Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* DASHBOARD TAB */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6 max-w-5xl">
-            <div>
-              <h1 className="text-2xl font-bold mb-2 text-teal-950 tracking-wide">Welcome back, {currentUser.name}!</h1>
-              <p className="text-xs text-slate-500">Here is your daily wellness snapshot and activity summary.</p>
-            </div>
+        {/* Top Header with Menu Button */}
+        <header className="bg-white border-b border-teal-100 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-teal-100/50 transition-all cursor-pointer"
+            >
+              <span className="text-base">☰</span> Menu
+            </button>
+            <span className="font-bold text-teal-900 text-base sm:text-lg">Habitly</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-600 font-medium hidden sm:inline">{currentUser.name}</span>
+            <button onClick={() => setCurrentUser(null)} className="text-xs text-teal-700 font-semibold hover:underline">Logout</button>
+          </div>
+        </header>
 
-            {/* Daily Mood Check-In Reminder Banner */}
-            {!moodCheckedInToday && (
-              <div className="bg-white border-2 border-teal-500 rounded-2xl p-5 shadow-md flex items-center justify-between bg-gradient-to-r from-teal-50/80 to-white">
-                <div className="flex items-center space-x-4">
-                  <span className="text-3xl">🌿</span>
-                  <div>
-                    <h3 className="font-bold text-sm text-teal-950">Daily Check-In Reminder</h3>
-                    <p className="text-xs text-teal-800">You haven't logged your mood today. Take 10 seconds to record how you feel!</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setActiveTab('mood')}
-                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0"
-                >
-                  Do Check-In Now →
-                </button>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Today's Mood</span>
-                <span className="text-xl font-bold text-teal-950">{todayMood || 'Pending ⚠️'}</span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Hydration</span>
-                <span className="text-2xl font-bold text-teal-950">72% 💧</span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Sleep Average</span>
-                <span className="text-2xl font-bold text-teal-950">7.2 hrs 🌙</span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Habit Streak</span>
-                <span className="text-2xl font-bold text-teal-950">14 Days 🔥</span>
-              </div>
-            </div>
+        {/* Scrollable Main Content with generous bottom clearance (pb-32) */}
+        <main className="flex-1 bg-teal-50/20 p-4 sm:p-8 overflow-y-auto pb-32 md:pb-8">
+          <div className="max-w-5xl mx-auto space-y-6">
 
-            {/* AI Report Generator Quick Widget */}
-            <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
+            {/* DASHBOARD TAB */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6">
                 <div>
-                  <h3 className="font-bold text-sm text-teal-950">AI Health Report & Tracker</h3>
-                  <p className="text-xs text-slate-500">Generate an AI-analyzed progress report based on your recent habit, mood, and substance logs.</p>
-                </div>
-                <button 
-                  onClick={generateAiReport}
-                  disabled={aiReportGenerating}
-                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-md transition-all shrink-0"
-                >
-                  {aiReportGenerating ? 'Analyzing Data...' : 'Generate AI Report'}
-                </button>
-              </div>
-
-              {aiReportGenerated && aiReportData && (
-                <div className="mt-4 p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs space-y-2">
-                  <p className="font-bold text-teal-950 text-sm">✨ Weekly AI Summary & Insights</p>
-                  <p className="text-slate-700"><strong>Overview:</strong> {aiReportData.summary}</p>
-                  <p className="text-slate-700"><strong>Substance Log:</strong> {aiReportData.substanceNote}</p>
-                  <p className="text-teal-800 font-semibold"><strong>Recommendation:</strong> {aiReportData.recommendation}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* HABITS TAB */}
-        {activeTab === 'habits' && (
-          <div>
-            <h1 className="text-2xl font-bold mb-2 text-teal-950 tracking-wide">Daily Habit Tracker</h1>
-            <p className="text-xs text-slate-500 mb-6">Check off routines or add your own custom habit items.</p>
-
-            <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-2xl space-y-4">
-              <form onSubmit={handleAddCustomHabit} className="flex gap-2 pb-2 border-b border-teal-100">
-                <input 
-                  type="text" 
-                  value={newHabitName}
-                  onChange={(e) => setNewHabitName(e.target.value)}
-                  placeholder="Add custom habit (e.g. Read 20 pages)..."
-                  className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Habit</button>
-              </form>
-
-              <div className="space-y-3">
-                {habitsList.map((habit) => (
-                  <div key={habit.id} onClick={() => toggleHabit(habit.id)} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${habit.completed ? 'bg-teal-50/60 border-teal-200' : 'bg-white border-slate-100'}`}>
-                    <span className={`text-sm font-medium ${habit.completed ? 'line-through text-teal-900/60' : 'text-slate-800'}`}>{habit.name}</span>
-                    <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${habit.completed ? 'bg-teal-600 text-white' : 'border border-slate-300 text-transparent'}`}>✓</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MOOD TRACKER TAB */}
-        {activeTab === 'mood' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Mood & Stress Tracking</h1>
-              <p className="text-xs text-slate-500">Record how you feel daily, monitor your stress levels, and check your 7-day trend.</p>
-            </div>
-
-            <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-sm text-teal-950 mb-4">How are you feeling today?</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-                {[
-                  { label: 'Great', emoji: '😁' },
-                  { label: 'Good', emoji: '😊' },
-                  { label: 'Okay', emoji: '😐' },
-                  { label: 'Low', emoji: '😔' },
-                  { label: 'Stressed', emoji: '😫' }
-                ].map((m) => (
-                  <button
-                    key={m.label}
-                    onClick={() => {
-                      setTodayMood(`${m.emoji} ${m.label}`);
-                      setMoodCheckedInToday(true);
-                    }}
-                    className={`p-4 rounded-2xl border text-center transition-all ${
-                      todayMood === `${m.emoji} ${m.label}`
-                        ? 'bg-teal-600 border-teal-600 text-white shadow-md'
-                        : 'bg-teal-50/30 border-teal-100 hover:bg-teal-50 text-slate-800'
-                    }`}
-                  >
-                    <span className="text-2xl block mb-1">{m.emoji}</span>
-                    <span className="text-xs font-bold">{m.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-teal-100">
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-teal-900">Stress Level Score ({stressLevel}%)</label>
-                    <span className="text-xs font-semibold text-teal-600">{stressLevel < 40 ? 'Calm & Balanced' : stressLevel < 70 ? 'Moderate Stress' : 'High Stress'}</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="100" 
-                    value={stressLevel} 
-                    onChange={(e) => setStressLevel(Number(e.target.value))}
-                    className="w-full accent-teal-600 cursor-pointer"
-                  />
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Welcome back, {currentUser.name}!</h1>
+                  <p className="text-xs text-slate-500">Here is your daily wellness snapshot and activity summary.</p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-teal-900 mb-2">Daily Journal & Reflections</label>
-                  <textarea 
-                    rows="3" 
-                    value={journalNote}
-                    onChange={(e) => setJournalNote(e.target.value)}
-                    placeholder="Write down your thoughts, highlights, or triggers today..."
-                    className="w-full p-4 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                  />
-                </div>
-
-                <button 
-                  onClick={() => setJournalSaved(true)}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
-                >
-                  {journalSaved ? '✓ Journal Saved!' : 'Save Reflection'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SUBSTANCE TRACKER TAB */}
-        {activeTab === 'substance' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Substance Tracker & Reduction</h1>
-              <p className="text-xs text-slate-500">Monitor daily intake, visualize weekly trends, and track your wellness goals.</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-900">🚬 Cigarettes Today</span>
-                  <span className="text-2xl font-bold text-teal-950">{cigarettesToday}</span>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setCigarettesToday(Math.max(0, cigarettesToday - 1))} className="flex-1 py-2 bg-teal-50 hover:bg-teal-100 text-teal-900 font-bold rounded-xl text-xs border border-teal-200">- Decrease</button>
-                  <button onClick={() => setCigarettesToday(cigarettesToday + 1)} className="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs">+ Increase</button>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-900">🍷 Alcohol Units Today</span>
-                  <span className="text-2xl font-bold text-teal-950">{alcoholToday}</span>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setAlcoholToday(Math.max(0, alcoholToday - 1))} className="flex-1 py-2 bg-teal-50 hover:bg-teal-100 text-teal-900 font-bold rounded-xl text-xs border border-teal-200">- Decrease</button>
-                  <button onClick={() => setAlcoholToday(alcoholToday + 1)} className="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs">+ Increase</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm">
-              <h3 className="font-bold text-sm text-teal-950 mb-3">7-Day Cigarette Intake Trend</h3>
-              <div className="flex items-end space-x-3 h-32 pt-6">
-                {weeklyCigarettes.map((val, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-teal-900">{val}</span>
-                    <div style={{ height: `${val * 12}px` }} className="w-full bg-teal-600 rounded-t-lg"></div>
-                    <span className="text-[10px] text-slate-400">Day {idx + 1}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* NUTRITION TAB */}
-        {activeTab === 'nutrition' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Food Scanner & Nutrition</h1>
-              <p className="text-xs text-slate-500">Scan your meals with AI or log your dietary intake manually.</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-sm text-teal-950">AI Meal Scanner Simulator</h3>
-                <button 
-                  onClick={simulateFoodScan}
-                  disabled={isScanning}
-                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-md"
-                >
-                  {isScanning ? 'Scanning Meal...' : '📸 Scan Photo'}
-                </button>
-              </div>
-
-              {scanResult && (
-                <div className="p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs space-y-1">
-                  <p className="font-bold text-teal-950 text-sm">✨ Scan Result: {scanResult.item}</p>
-                  <p className="text-slate-700"><strong>Calories:</strong> {scanResult.calories} | <strong>Protein:</strong> {scanResult.protein}</p>
-                  <p className="text-teal-800 font-semibold"><strong>Health Score:</strong> {scanResult.healthScore}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm text-teal-950">Today's Meal Logs</h3>
-              <form onSubmit={handleAddMeal} className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newMealName}
-                  onChange={(e) => setNewMealName(e.target.value)}
-                  placeholder="Meal description (e.g. Salmon & Rice)..."
-                  className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <input 
-                  type="number" 
-                  value={newMealCalories}
-                  onChange={(e) => setNewMealCalories(e.target.value)}
-                  placeholder="kcal"
-                  className="w-24 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold">Add</button>
-              </form>
-
-              <div className="space-y-2">
-                {nutritionLogs.map((log) => (
-                  <div key={log.id} className="flex justify-between items-center p-3 bg-teal-50/40 border border-teal-100 rounded-xl text-xs">
-                    <div>
-                      <span className="font-bold text-teal-950 block">{log.meal}</span>
-                      <span className="text-[10px] text-slate-400">{log.time}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-teal-800 block">{log.calories}</span>
-                      <span className="text-[10px] text-slate-500">Protein: {log.protein}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* EXERCISE PLANNER TAB */}
-        {activeTab === 'exercise' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Exercise Planner & Stopwatch</h1>
-              <p className="text-xs text-slate-500">Track active workout sessions and log your fitness history.</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm text-center space-y-4">
-              <h3 className="font-bold text-sm text-teal-950">Active Workout Session</h3>
-              <div className="text-4xl font-mono font-bold text-teal-700">{formatTime(workoutSeconds)}</div>
-              <p className="text-xs text-slate-500">Mode: {workoutType}</p>
-              <div className="flex justify-center gap-3">
-                <button 
-                  onClick={() => setWorkoutActive(!workoutActive)} 
-                  className={`px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md ${workoutActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-teal-600 hover:bg-teal-700'}`}
-                >
-                  {workoutActive ? 'Pause Workout' : 'Start Workout'}
-                </button>
-                <button 
-                  onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }} 
-                  className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm text-teal-950">Workout History</h3>
-              <form onSubmit={handleAddCustomWorkout} className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newCustomWorkoutType}
-                  onChange={(e) => setNewCustomWorkoutType(e.target.value)}
-                  placeholder="Workout type (e.g. Evening Jog)..."
-                  className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <input 
-                  type="text" 
-                  value={newCustomWorkoutDuration}
-                  onChange={(e) => setNewCustomWorkoutDuration(e.target.value)}
-                  placeholder="Duration (e.g. 30 mins)..."
-                  className="w-36 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold">Log</button>
-              </form>
-
-              <div className="space-y-2">
-                {workoutHistory.map((w) => (
-                  <div key={w.id} className="flex justify-between items-center p-3 bg-teal-50/40 border border-teal-100 rounded-xl text-xs">
-                    <span className="font-bold text-teal-950">{w.type}</span>
-                    <div className="text-right">
-                      <span className="font-semibold text-teal-800">{w.duration}</span>
-                      <span className="text-[10px] text-slate-400 block">{w.date}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* REMINDERS TAB */}
-        {activeTab === 'reminders' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Reminders & Push Notifications</h1>
-              <p className="text-xs text-slate-500">Manage daily automated alerts and test push notifications to your phone.</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-teal-100 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm text-teal-950">Add New Alarm / Reminder</h3>
-              <form onSubmit={handleAddCustomReminder} className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newReminderTitle}
-                  onChange={(e) => setNewReminderTitle(e.target.value)}
-                  placeholder="Reminder title (e.g. Take Medication)..."
-                  className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <input 
-                  type="text" 
-                  value={newReminderTime}
-                  onChange={(e) => setNewReminderTime(e.target.value)}
-                  placeholder="Time (e.g. 4:00 PM)..."
-                  className="w-36 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold">Set</button>
-              </form>
-
-              <div className="space-y-3 pt-2">
-                {remindersList.map((rem) => (
-                  <div key={rem.id} className="flex justify-between items-center p-4 bg-teal-50/40 border border-teal-100 rounded-xl text-xs">
-                    <div>
-                      <span className="font-bold text-teal-950 text-sm block">{rem.title}</span>
-                      <span className="text-slate-500">{rem.time} • Status: {rem.status}</span>
+                {/* Daily Mood Check-In Reminder Banner */}
+                {!moodCheckedInToday && (
+                  <div className="bg-white border-2 border-teal-500 rounded-2xl p-5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-50/80 to-white">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-3xl">🌿</span>
+                      <div>
+                        <h3 className="font-bold text-sm text-teal-950">Daily Check-In Reminder</h3>
+                        <p className="text-xs text-teal-800">You haven't logged your mood today. Take 10 seconds to record how you feel!</p>
+                      </div>
                     </div>
                     <button 
-                      onClick={() => triggerPhoneNotification(rem.title)}
-                      className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-sm"
+                      onClick={() => setActiveTab('mood')}
+                      className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0"
                     >
-                      Trigger Push Notification 📱
+                      Do Check-In Now →
                     </button>
                   </div>
-                ))}
+                )}
+                
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Today's Mood</span>
+                    <span className="text-lg sm:text-xl font-bold text-teal-950">{todayMood || 'Pending ⚠️'}</span>
+                  </div>
+                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Hydration</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">72% 💧</span>
+                  </div>
+                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Sleep Average</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">7.2 hrs 🌙</span>
+                  </div>
+                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Habit Streak</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">14 Days 🔥</span>
+                  </div>
+                </div>
+
+                {/* AI Report Generator Quick Widget */}
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <div>
+                      <h3 className="font-bold text-sm text-teal-950">AI Health Report & Tracker</h3>
+                      <p className="text-xs text-slate-500">Generate an AI-analyzed progress report based on your recent habit, mood, and substance logs.</p>
+                    </div>
+                    <button 
+                      onClick={generateAiReport}
+                      disabled={aiReportGenerating}
+                      className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-md transition-all shrink-0"
+                    >
+                      {aiReportGenerating ? 'Analyzing Data...' : 'Generate AI Report'}
+                    </button>
+                  </div>
+
+                  {aiReportGenerated && aiReportData && (
+                    <div className="mt-4 p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs space-y-2">
+                      <p className="font-bold text-teal-950 text-sm">✨ Weekly AI Summary & Insights</p>
+                      <p className="text-slate-700"><strong>Overview:</strong> {aiReportData.summary}</p>
+                      <p className="text-slate-700"><strong>Substance Log:</strong> {aiReportData.substanceNote}</p>
+                      <p className="text-teal-800 font-semibold"><strong>Recommendation:</strong> {aiReportData.recommendation}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* DOCTOR CHAT TAB */}
-        {activeTab === 'doctor' && currentUser.role === 'patient' && (
-          <div className="max-w-4xl h-[calc(100vh-140px)] flex flex-col">
-            <div className="mb-4">
-              <h1 className="text-2xl font-bold mb-1 text-teal-950 tracking-wide">Doctor Direct Chat</h1>
-              <p className="text-xs text-slate-500">Secure communication with your linked medical professional.</p>
-            </div>
+            {/* HABITS TAB */}
+            {activeTab === 'habits' && (
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Daily Habit Tracker</h1>
+                <p className="text-xs text-slate-500 mb-6">Check off routines or add your own custom habit items.</p>
 
-            <div className="flex-1 bg-white border border-teal-100 rounded-2xl p-6 flex flex-col shadow-sm">
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
-                {currentPatientData?.messages.map((msg, index) => (
-                  <div key={index} className={`flex flex-col ${msg.sender === 'patient' ? 'items-end' : 'items-start'}`}>
-                    <div className="flex items-start space-x-3 max-w-xl">
-                      {msg.sender === 'doctor' && (
-                        <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center text-xs font-bold justify-center text-white shadow-sm mt-1">
-                          Dr
-                        </div>
-                      )}
-                      <div>
-                        <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                          msg.sender === 'patient' 
-                            ? 'bg-teal-600 text-white rounded-tr-none shadow-md shadow-teal-600/20' 
-                            : 'bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100'
-                        }`}>
-                          {msg.text}
-                        </div>
-                        <span className="text-[11px] text-slate-400 mt-1 block">{msg.time}</span>
+                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm max-w-2xl space-y-4">
+                  <form onSubmit={handleAddCustomHabit} className="flex flex-col sm:flex-row gap-2 pb-2 border-b border-teal-100">
+                    <input 
+                      type="text" 
+                      value={newHabitName}
+                      onChange={(e) => setNewHabitName(e.target.value)}
+                      placeholder="Add custom habit (e.g. Read 20 pages)..."
+                      className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                    <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Habit</button>
+                  </form>
+
+                  <div className="space-y-3">
+                    {habitsList.map((habit) => (
+                      <div key={habit.id} onClick={() => toggleHabit(habit.id)} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${habit.completed ? 'bg-teal-50/60 border-teal-200' : 'bg-white border-slate-100'}`}>
+                        <span className={`text-sm font-medium ${habit.completed ? 'line-through text-teal-900/60' : 'text-slate-800'}`}>{habit.name}</span>
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${habit.completed ? 'bg-teal-600 text-white' : 'border border-slate-300 text-transparent'}`}>✓</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MOOD TRACKER TAB */}
+            {activeTab === 'mood' && (
+              <div className="max-w-4xl space-y-6">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Mood & Stress Tracking</h1>
+                  <p className="text-xs text-slate-500">Record how you feel daily, adjust your stress levels, and write reflection notes.</p>
+                </div>
+
+                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
+                  <div>
+                    <h3 className="font-bold text-sm text-teal-950 mb-3">How are you feeling today?</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {[
+                        { label: 'Great', emoji: '😁' },
+                        { label: 'Good', emoji: '😊' },
+                        { label: 'Okay', emoji: '😐' },
+                        { label: 'Low', emoji: '😔' },
+                        { label: 'Stressed', emoji: '😫' }
+                      ].map((m) => (
+                        <button
+                          key={m.label}
+                          onClick={() => {
+                            setTodayMood(`${m.emoji} ${m.label}`);
+                            setMoodCheckedInToday(true);
+                          }}
+                          className={`p-4 rounded-2xl border text-center transition-all ${
+                            todayMood === `${m.emoji} ${m.label}`
+                              ? 'bg-teal-600 border-teal-600 text-white shadow-md'
+                              : 'bg-teal-50/30 border-teal-100 hover:bg-teal-50 text-slate-800'
+                          }`}
+                        >
+                          <span className="text-2xl block mb-1">{m.emoji}</span>
+                          <span className="text-xs font-bold">{m.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Stress Level Slider */}
+                  <div className="pt-4 border-t border-teal-100">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-bold text-teal-950 uppercase tracking-wider">Stress Level: {stressLevel}%</label>
+                      <span className="text-xs text-slate-500">{stressLevel < 40 ? 'Low' : stressLevel < 75 ? 'Moderate' : 'High'}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={stressLevel} 
+                      onChange={(e) => setStressLevel(e.target.value)}
+                      className="w-full accent-teal-600 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Daily Reflection Journal Note */}
+                  <div className="pt-4 border-t border-teal-100 space-y-3">
+                    <label className="text-xs font-bold text-teal-950 uppercase tracking-wider block">Daily Reflection Journal</label>
+                    <textarea
+                      value={journalNote}
+                      onChange={(e) => {
+                        setJournalNote(e.target.value);
+                        setJournalSaved(false);
+                      }}
+                      placeholder="Write down your thoughts, reflections, or notes for today..."
+                      className="w-full p-4 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600 h-28 resize-none"
+                    />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <button
+                        onClick={() => setJournalSaved(true)}
+                        className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+                      >
+                        Save Journal Entry
+                      </button>
+                      {journalSaved && <span className="text-xs text-teal-700 font-semibold">✓ Journal saved successfully!</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SUBSTANCE TAB */}
+            {activeTab === 'substance' && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Substance Intake Tracker</h1>
+                  <p className="text-xs text-slate-500">Monitor daily reduction goals and view your weekly consumption trends.</p>
+                </div>
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h3 className="font-bold text-sm text-teal-950">Current Status</h3>
+                  <div className="p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs">
+                    <p className="font-semibold text-teal-900">14-Day Milestone Active 🔥</p>
+                    <p className="text-slate-600 mt-1">Cigarettes today: {cigarettesToday} units | Alcohol today: {alcoholToday} standard drinks.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* NUTRITION TAB */}
+            {activeTab === 'nutrition' && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Food & Nutrition Log</h1>
+                  <p className="text-xs text-slate-500">Scan meals or log nutritional content manually.</p>
+                </div>
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                  <button onClick={simulateFoodScan} disabled={isScanning} className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold shadow-md">
+                    {isScanning ? 'Scanning Meal Photo...' : '📸 Scan Meal with AI'}
+                  </button>
+                  {scanResult && (
+                    <div className="p-4 bg-teal-50 rounded-xl border border-teal-200 text-xs space-y-1">
+                      <p className="font-bold text-teal-950">{scanResult.item}</p>
+                      <p className="text-slate-700">Calories: {scanResult.calories} | Protein: {scanResult.protein}</p>
+                      <p className="text-teal-800 font-semibold">Health Score: {scanResult.healthScore}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* EXERCISE TAB */}
+            {activeTab === 'exercise' && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Exercise Planner</h1>
+                  <p className="text-xs text-slate-500">Track active workout timers, add custom workout names/times, and view history.</p>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Timer Box */}
+                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
+                    <div className="p-6 bg-teal-50/60 rounded-2xl border border-teal-200 text-center">
+                      <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2">{workoutType}</p>
+                      <h2 className="text-4xl font-mono font-bold text-teal-950 mb-4">{formatTime(workoutSeconds)}</h2>
+                      <div className="flex justify-center gap-3">
+                        <button onClick={() => setWorkoutActive(!workoutActive)} className={`px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md ${workoutActive ? 'bg-amber-600' : 'bg-teal-600'}`}>
+                          {workoutActive ? 'Pause Workout' : 'Start Workout'}
+                        </button>
+                        <button onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }} className="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Reset</button>
                       </div>
                     </div>
                   </div>
-                ))}
+
+                  {/* Custom Workout Creator & History */}
+                  <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+                    <h3 className="font-bold text-sm text-teal-950">Add Custom Workout Session</h3>
+                    <form onSubmit={handleAddCustomWorkout} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2">
+                      <input 
+                        type="text" 
+                        value={newCustomWorkoutType}
+                        onChange={(e) => setNewCustomWorkoutType(e.target.value)}
+                        placeholder="Workout name (e.g. Yoga Flow)..."
+                        className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                      />
+                      <input 
+                        type="text" 
+                        value={newCustomWorkoutDuration}
+                        onChange={(e) => setNewCustomWorkoutDuration(e.target.value)}
+                        placeholder="Duration (e.g. 30 mins)..."
+                        className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                      />
+                      <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Workout</button>
+                    </form>
+
+                    <div className="pt-2">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Workout History</h4>
+                      <div className="space-y-2">
+                        {workoutHistory.map(item => (
+                          <div key={item.id} className="flex items-center justify-between p-3 bg-teal-50/30 border border-teal-100 rounded-xl text-xs">
+                            <div>
+                              <p className="font-bold text-teal-950">{item.type}</p>
+                              <p className="text-slate-500">{item.date}</p>
+                            </div>
+                            <span className="font-semibold text-teal-700">{item.duration}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            )}
 
-              <form onSubmit={handlePatientSend} className="flex items-center space-x-2 pt-3 border-t border-teal-100">
-                <input 
-                  type="text" 
-                  value={patientInputMessage}
-                  onChange={(e) => setPatientInputMessage(e.target.value)}
-                  placeholder="Message your doctor..."
-                  className="flex-1 px-4 py-3 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-sm text-slate-800"
-                />
-                <button type="submit" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold shadow-md">Send</button>
-              </form>
-            </div>
+            {/* REMINDERS TAB */}
+            {activeTab === 'reminders' && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Reminders & Notifications</h1>
+                  <p className="text-xs text-slate-500">Manage device alerts, create custom reminders, and test push notifications.</p>
+                </div>
+
+                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+                  <h3 className="font-bold text-sm text-teal-950">Create Custom Reminder</h3>
+                  <form onSubmit={handleAddCustomReminder} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-4 border-b border-teal-100">
+                    <input 
+                      type="text" 
+                      value={newReminderTitle}
+                      onChange={(e) => setNewReminderTitle(e.target.value)}
+                      placeholder="Reminder title (e.g. Take Vitamins)..."
+                      className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                    <input 
+                      type="text" 
+                      value={newReminderTime}
+                      onChange={(e) => setNewReminderTime(e.target.value)}
+                      placeholder="Time (e.g. 8:00 PM)..."
+                      className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                    />
+                    <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Reminder</button>
+                  </form>
+
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Reminders</h4>
+                    {remindersList.map((rem) => (
+                      <div key={rem.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-teal-50/30 border border-teal-100 rounded-xl">
+                        <div>
+                          <p className="text-sm font-bold text-teal-950">{rem.title}</p>
+                          <p className="text-xs text-slate-500">{rem.time}</p>
+                        </div>
+                        <button onClick={() => triggerPhoneNotification(rem.title)} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold">
+                          Test Push Alert
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOCTOR CHAT TAB */}
+            {activeTab === 'doctor' && currentUser.role === 'patient' && (
+              <div className="space-y-6 max-w-3xl">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Doctor Secure Chat</h1>
+                  <p className="text-xs text-slate-500">Direct channel with your assigned practitioner.</p>
+                </div>
+                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col h-[450px] sm:h-[500px]">
+                  <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                    {currentPatientData.messages.map((msg, idx) => (
+                      <div key={idx} className={`flex flex-col ${msg.sender === 'patient' ? 'items-end' : 'items-start'}`}>
+                        <div className={`p-4 rounded-2xl text-sm max-w-md ${msg.sender === 'patient' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-teal-50 text-slate-800 rounded-tl-none border border-teal-100'}`}>
+                          {msg.text}
+                        </div>
+                        <span className="text-[10px] text-slate-400 mt-1">{msg.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <form onSubmit={handlePatientSend} className="flex gap-2 pt-3 border-t border-teal-100">
+                    <input 
+                      type="text" 
+                      value={patientInputMessage} 
+                      onChange={(e) => setPatientInputMessage(e.target.value)} 
+                      placeholder="Message Dr. Sarah Chen..." 
+                      className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-sm focus:outline-none focus:border-teal-600"
+                    />
+                    <button type="submit" className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl">Send</button>
+                  </form>
+                </div>
+              </div>
+            )}
+
           </div>
-        )}
-
+        </main>
       </div>
-    </div>
-  );
-}
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-200 z-50 md:hidden flex justify-around items-center py-2 px-1 shadow-lg">
+        {navTabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors ${
+                isActive ? 'text-teal-700 font-bold' : 'text-slate-400 hover:text-slate-700'
+              }`}
+            >
+              <span className="text-lg">{tab.mobileIcon}</span>
+              <span className="text-[10px] mt-0.5 truncate">{tab.shortLabel}</span>
+            </button>
+          );
+        })}
+      </nav>
