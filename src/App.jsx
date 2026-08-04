@@ -615,9 +615,15 @@ export default function App() {
 
                   <div className="space-y-3">
                     {habitsList.map((habit) => (
-                      <div key={habit.id} onClick={() => toggleHabit(habit.id)} className={habit.completed ? "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-teal-50/60 border-teal-200" : "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-white border-slate-100"}>
-                        <span className={habit.completed ? "text-sm font-medium line-through text-teal-900/60" : "text-sm font-medium text-slate-800"}>{habit.name}</span>
-                        <span className={habit.completed ? "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold bg-teal-600 text-white" : "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold border border-slate-300 text-transparent"}>✓</span>
+                      <div 
+                        key={habit.id} 
+                        onClick={() => toggleHabit(habit.id)} 
+                        className={habit.completed ? "flex items-center justify-between p-4 rounded-xl border cursor-pointer bg-teal-50/50 border-teal-200 text-teal-900" : "flex items-center justify-between p-4 rounded-xl border cursor-pointer bg-white border-teal-100 text-slate-700 hover:bg-teal-50/30"}
+                      >
+                        <span className="text-xs font-semibold">{habit.name}</span>
+                        <span className={habit.completed ? "w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center text-xs font-bold" : "w-6 h-6 rounded-lg border border-teal-300 flex items-center justify-center text-xs"}>
+                          {habit.completed ? '✓' : ''}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -626,43 +632,34 @@ export default function App() {
             )}
 
             {activeTab === 'mood' && (
-              <div className="max-w-4xl space-y-6">
+              <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Mood & Stress Tracking</h1>
-                  <p className="text-xs text-slate-500">Record how you feel daily, adjust your stress levels, and write reflection notes.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Mood & Stress Tracker</h1>
+                  <p className="text-xs text-slate-500">Record how you're feeling today and note down reflections.</p>
                 </div>
 
-                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-2xl space-y-6">
                   <div>
-                    <h3 className="font-bold text-sm text-teal-950 mb-3">How are you feeling today?</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {[
-                        { label: 'Great', emoji: '😁' },
-                        { label: 'Good', emoji: '😊' },
-                        { label: 'Okay', emoji: '😐' },
-                        { label: 'Low', emoji: '😔' },
-                        { label: 'Stressed', emoji: '😫' }
-                      ].map((m) => (
+                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-3">How do you feel today?</label>
+                    <div className="grid grid-cols-4 gap-3">
+                      {['😊 Great', '😌 Calm', '🔋 Energetic', '🌧️ Low'].map((mood) => (
                         <button
-                          key={m.label}
+                          key={mood}
+                          type="button"
                           onClick={() => {
-                            setTodayMood(`${m.emoji} ${m.label}`);
+                            setTodayMood(mood);
                             setMoodCheckedInToday(true);
                           }}
-                          className={todayMood === `${m.emoji} ${m.label}` ? "p-4 rounded-2xl border text-center transition-all bg-teal-600 border-teal-600 text-white shadow-md" : "p-4 rounded-2xl border text-center transition-all bg-teal-50/30 border-teal-100 hover:bg-teal-50 text-slate-800"}
+                          className={todayMood === mood ? "py-3 px-3 bg-teal-600 text-white font-bold rounded-xl text-xs shadow-md" : "py-3 px-3 bg-teal-50/50 border border-teal-100 text-teal-900 font-semibold rounded-xl text-xs hover:bg-teal-100/50"}
                         >
-                          <span className="text-2xl block mb-1">{m.emoji}</span>
-                          <span className="text-xs font-bold">{m.label}</span>
+                          {mood}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-teal-100">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold text-teal-950 uppercase tracking-wider">Stress Level: {stressLevel}%</label>
-                      <span className="text-xs text-slate-500">{stressLevel < 40 ? 'Low' : stressLevel < 75 ? 'Moderate' : 'High'}</span>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">Stress Level: {stressLevel}/100</label>
                     <input 
                       type="range" 
                       min="0" 
@@ -673,62 +670,92 @@ export default function App() {
                     />
                   </div>
 
-                  <div className="pt-4 border-t border-teal-100 space-y-3">
-                    <label className="text-xs font-bold text-teal-950 uppercase tracking-wider block">Daily Reflection Journal</label>
-                    <textarea
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">Journal Notes</label>
+                    <textarea 
+                      rows="3"
                       value={journalNote}
-                      onChange={(e) => {
-                        setJournalNote(e.target.value);
-                        setJournalSaved(false);
-                      }}
-                      placeholder="Write down your thoughts, reflections, or notes for today..."
-                      className="w-full p-4 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600 h-28 resize-none"
+                      onChange={(e) => setJournalNote(e.target.value)}
+                      placeholder="Write your thoughts or reflections here..."
+                      className="w-full p-3 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                     />
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                      <button
-                        onClick={() => setJournalSaved(true)}
-                        className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
-                      >
-                        Save Journal Entry
-                      </button>
-                      {journalSaved && <span className="text-xs text-teal-700 font-semibold">✓ Journal saved successfully!</span>}
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setJournalSaved(true);
+                      setTimeout(() => setJournalSaved(false), 3000);
+                    }}
+                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"
+                  >
+                    Save Check-In
+                  </button>
+                  {journalSaved && <span className="text-xs text-teal-600 font-semibold ml-3">✓ Saved successfully!</span>}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'substance' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Substance Tracker</h1>
+                  <p className="text-xs text-slate-500">Log daily habits transparently for your wellness goals and reports.</p>
+                </div>
+
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
+                    <div>
+                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Cigarettes Today</h3>
+                      <p className="text-xs text-slate-500">Estimated CO exposure ~9 ppm</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button onClick={() => setCigarettesToday(Math.max(0, cigarettesToday - 1))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
+                      <span className="font-bold text-sm text-teal-950 w-6 text-center">{cigarettesToday}</span>
+                      <button onClick={() => setCigarettesToday(cigarettesToday + 1)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
+                    <div>
+                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Alcohol (Standard Units)</h3>
+                      <p className="text-xs text-slate-500">Recommended &lt; 2 units/day</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button onClick={() => setAlcoholToday(Math.max(0, alcoholToday - 1))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
+                      <span className="font-bold text-sm text-teal-950 w-6 text-center">{alcoholToday}</span>
+                      <button onClick={() => setAlcoholToday(alcoholToday + 1)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {activeTab === 'substance' && (
-              <div className="space-y-6 max-w-3xl">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Substance Intake Tracker</h1>
-                  <p className="text-xs text-slate-500">Monitor daily reduction goals and view your weekly consumption trends.</p>
-                </div>
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-bold text-sm text-teal-950">Current Status</h3>
-                  <div className="p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs">
-                    <p className="font-semibold text-teal-900">14-Day Milestone Active 🔥</p>
-                    <p className="text-slate-600 mt-1">Cigarettes today: {cigarettesToday} units | Alcohol today: {alcoholToday} standard drinks.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === 'nutrition' && (
-              <div className="space-y-6 max-w-3xl">
+              <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Food & Nutrition Log</h1>
-                  <p className="text-xs text-slate-500">Scan meals or log nutritional content manually.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Food & Nutrition Scanner</h1>
+                  <p className="text-xs text-slate-500">Simulate scanning meal photos to analyze nutritional content.</p>
                 </div>
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
-                  <button onClick={simulateFoodScan} disabled={isScanning} className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold shadow-md">
-                    {isScanning ? 'Scanning Meal Photo...' : '📸 Scan Meal with AI'}
-                  </button>
+
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4 text-center">
+                  <div className="border-2 border-dashed border-teal-200 rounded-2xl p-8 bg-teal-50/30 flex flex-col items-center justify-center space-y-3">
+                    <span className="text-4xl">🥗</span>
+                    <p className="text-xs font-bold text-teal-900">Upload or Snap a Meal Photo</p>
+                    <button 
+                      onClick={simulateFoodScan}
+                      disabled={isScanning}
+                      className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"
+                    >
+                      {isScanning ? 'Analyzing Meal...' : 'Scan Meal Photo'}
+                    </button>
+                  </div>
+
                   {scanResult && (
-                    <div className="p-4 bg-teal-50 rounded-xl border border-teal-200 text-xs space-y-1">
-                      <p className="font-bold text-teal-950">{scanResult.item}</p>
-                      <p className="text-slate-700">Calories: {scanResult.calories} | Protein: {scanResult.protein}</p>
-                      <p className="text-teal-800 font-semibold">Health Score: {scanResult.healthScore}</p>
+                    <div className="p-4 bg-teal-50/70 rounded-xl border border-teal-200 text-left text-xs space-y-1">
+                      <p className="font-bold text-teal-950 text-sm">✨ Scan Result: {scanResult.item}</p>
+                      <p className="text-slate-700"><strong>Calories:</strong> {scanResult.calories}</p>
+                      <p className="text-slate-700"><strong>Protein:</strong> {scanResult.protein}</p>
+                      <p className="text-teal-800 font-semibold"><strong>Health Score:</strong> {scanResult.healthScore}</p>
                     </div>
                   )}
                 </div>
@@ -736,59 +763,60 @@ export default function App() {
             )}
 
             {activeTab === 'exercise' && (
-              <div className="space-y-6 max-w-3xl">
+              <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Exercise Planner</h1>
-                  <p className="text-xs text-slate-500">Track active workout timers, add custom workout names/times, and view history.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Exercise Planner & Stopwatch</h1>
+                  <p className="text-xs text-slate-500">Track active workout sessions and review past activity.</p>
                 </div>
-                
-                <div className="space-y-6">
-                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
-                    <div className="p-6 bg-teal-50/60 rounded-2xl border border-teal-200 text-center">
-                      <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2">{workoutType}</p>
-                      <h2 className="text-4xl font-mono font-bold text-teal-950 mb-4">{formatTime(workoutSeconds)}</h2>
-                      <div className="flex justify-center gap-3">
-                        <button onClick={() => setWorkoutActive(!workoutActive)} className={workoutActive ? "px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md bg-amber-600" : "px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md bg-teal-600"}>
-                          {workoutActive ? 'Pause Workout' : 'Start Workout'}
-                        </button>
-                        <button onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }} className="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Reset</button>
-                      </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center space-y-4">
+                    <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">{workoutType}</span>
+                    <div className="text-4xl font-mono font-bold text-teal-950 bg-teal-50 px-6 py-3 rounded-2xl border border-teal-200">
+                      {formatTime(workoutSeconds)}
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setWorkoutActive(!workoutActive)}
+                        className={workoutActive ? "px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md" : "px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"}
+                      >
+                        {workoutActive ? 'Pause Workout' : 'Start Workout'}
+                      </button>
+                      <button 
+                        onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }}
+                        className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold"
+                      >
+                        Reset
+                      </button>
                     </div>
                   </div>
 
-                  <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
-                    <h3 className="font-bold text-sm text-teal-950">Add Custom Workout Session</h3>
-                    <form onSubmit={handleAddCustomWorkout} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2">
+                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Workout History</h3>
+                    <form onSubmit={handleAddCustomWorkout} className="flex gap-2">
                       <input 
                         type="text" 
                         value={newCustomWorkoutType}
                         onChange={(e) => setNewCustomWorkoutType(e.target.value)}
-                        placeholder="Workout name (e.g. Yoga Flow)..."
-                        className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                        placeholder="Workout type..."
+                        className="flex-1 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                       />
                       <input 
                         type="text" 
                         value={newCustomWorkoutDuration}
                         onChange={(e) => setNewCustomWorkoutDuration(e.target.value)}
-                        placeholder="Duration (e.g. 30 mins)..."
-                        className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                        placeholder="Duration..."
+                        className="w-24 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                       />
-                      <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Workout</button>
+                      <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold">Add</button>
                     </form>
-
-                    <div className="pt-2">
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Workout History</h4>
-                      <div className="space-y-2">
-                        {workoutHistory.map(item => (
-                          <div key={item.id} className="flex items-center justify-between p-3 bg-teal-50/30 border border-teal-100 rounded-xl text-xs">
-                            <div>
-                              <p className="font-bold text-teal-950">{item.type}</p>
-                              <p className="text-slate-500">{item.date}</p>
-                            </div>
-                            <span className="font-semibold text-teal-700">{item.duration}</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="space-y-2 overflow-y-auto max-h-40">
+                      {workoutHistory.map((w) => (
+                        <div key={w.id} className="flex items-center justify-between p-3 bg-teal-50/40 rounded-xl border border-teal-100 text-xs">
+                          <span className="font-bold text-teal-950">{w.type}</span>
+                          <span className="text-slate-500">{w.duration} ({w.date})</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -796,42 +824,43 @@ export default function App() {
             )}
 
             {activeTab === 'reminders' && (
-              <div className="space-y-6 max-w-3xl">
+              <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Reminders & Notifications</h1>
-                  <p className="text-xs text-slate-500">Manage device alerts, create custom reminders, and test push notifications.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Reminders & Push Notifications</h1>
+                  <p className="text-xs text-slate-500">Manage daily reminders and test simulated phone push notifications.</p>
                 </div>
 
-                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
-                  <h3 className="font-bold text-sm text-teal-950">Create Custom Reminder</h3>
-                  <form onSubmit={handleAddCustomReminder} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-4 border-b border-teal-100">
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
+                  <form onSubmit={handleAddCustomReminder} className="flex flex-col sm:flex-row gap-2 pb-3 border-b border-teal-100">
                     <input 
                       type="text" 
                       value={newReminderTitle}
                       onChange={(e) => setNewReminderTitle(e.target.value)}
-                      placeholder="Reminder title (e.g. Take Vitamins)..."
-                      className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                      placeholder="Reminder title..."
+                      className="flex-1 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                     />
                     <input 
                       type="text" 
                       value={newReminderTime}
                       onChange={(e) => setNewReminderTime(e.target.value)}
-                      placeholder="Time (e.g. 8:00 PM)..."
-                      className="px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
+                      placeholder="Time (e.g. 4:00 PM)..."
+                      className="w-36 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                     />
-                    <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Reminder</button>
+                    <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-semibold">Add</button>
                   </form>
 
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Reminders</h4>
+                  <div className="space-y-3">
                     {remindersList.map((rem) => (
-                      <div key={rem.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-teal-50/30 border border-teal-100 rounded-xl">
+                      <div key={rem.id} className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100 text-xs">
                         <div>
-                          <p className="text-sm font-bold text-teal-950">{rem.title}</p>
-                          <p className="text-xs text-slate-500">{rem.time}</p>
+                          <p className="font-bold text-teal-950">{rem.title}</p>
+                          <p className="text-slate-500">{rem.time}</p>
                         </div>
-                        <button onClick={() => triggerPhoneNotification(rem.title)} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold">
-                          Test Push Alert
+                        <button 
+                          onClick={() => triggerPhoneNotification(rem.title)}
+                          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold shadow-sm"
+                        >
+                          Test Push 📱
                         </button>
                       </div>
                     ))}
@@ -841,56 +870,65 @@ export default function App() {
             )}
 
             {activeTab === 'doctor' && currentUser.role === 'patient' && (
-              <div className="space-y-6 max-w-3xl">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-1 text-teal-950 tracking-wide">Doctor Secure Chat</h1>
-                  <p className="text-xs text-slate-500">Direct channel with your assigned practitioner.</p>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col h-[600px]">
+                <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
+                  <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Doctor Communication Channel</span>
+                  <span className="text-xs text-teal-600 font-medium">● Secure</span>
                 </div>
-                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col h-[450px] sm:h-[500px]">
-                  <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
-                    {currentPatientData.messages.map((msg, idx) => (
-                      <div key={idx} className={msg.sender === 'patient' ? "flex flex-col items-end" : "flex flex-col items-start"}>
-                        <div className={msg.sender === 'patient' ? "p-4 rounded-2xl text-sm max-w-md bg-teal-600 text-white rounded-tr-none" : "p-4 rounded-2xl text-sm max-w-md bg-teal-50 text-slate-800 rounded-tl-none border border-teal-100"}>
-                          {msg.text}
+
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                  {currentPatientData?.messages.map((msg, index) => (
+                    <div key={index} className={msg.sender === 'patient' ? "flex flex-col items-end" : "flex flex-col items-start"}>
+                      <div className="flex items-start space-x-3 max-w-xl">
+                        {msg.sender === 'doctor' && (
+                          <div className="w-8 h-8 rounded-full bg-teal-700 flex items-center text-xs font-bold justify-center text-white shadow-sm mt-1">
+                            Dr
+                          </div>
+                        )}
+                        <div>
+                          <div className={msg.sender === 'patient' ? "p-4 rounded-2xl text-sm leading-relaxed bg-teal-600 text-white rounded-tr-none shadow-md" : "p-4 rounded-2xl text-sm leading-relaxed bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100"}>
+                            {msg.text}
+                          </div>
+                          <span className="text-[11px] text-slate-400 mt-1 block">{msg.time}</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 mt-1">{msg.time}</span>
                       </div>
-                    ))}
-                  </div>
-                  <form onSubmit={handlePatientSend} className="flex gap-2 pt-3 border-t border-teal-100">
-                    <input 
-                      type="text" 
-                      value={patientInputMessage} 
-                      onChange={(e) => setPatientInputMessage(e.target.value)} 
-                      placeholder="Message Dr. Sarah Chen..." 
-                      className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-sm focus:outline-none focus:border-teal-600"
-                    />
-                    <button type="submit" className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl">Send</button>
-                  </form>
+                    </div>
+                  ))}
                 </div>
+
+                <form onSubmit={handlePatientSend} className="flex items-center space-x-2 pt-3 border-t border-teal-100">
+                  <input 
+                    type="text" 
+                    value={patientInputMessage}
+                    onChange={(e) => setPatientInputMessage(e.target.value)}
+                    placeholder="Message your doctor..."
+                    className="flex-1 px-4 py-3 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-sm text-slate-800"
+                  />
+                  <button type="submit" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold shadow-md">Send</button>
+                </form>
               </div>
             )}
 
           </div>
         </main>
+
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-200 z-50 md:hidden flex justify-around items-center py-2 px-1 shadow-lg">
+          {navTabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={isActive ? "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-teal-700 font-bold" : "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-slate-400 hover:text-slate-700"}
+              >
+                <span className="text-lg">{tab.mobileIcon}</span>
+                <span className="text-[10px] mt-0.5 truncate">{tab.shortLabel}</span>
+              </button>
+            );
+          })}
+        </nav>
+
       </div>
-
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-200 z-50 md:hidden flex justify-around items-center py-2 px-1 shadow-lg">
-        {navTabs.map(tab => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={isActive ? "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-teal-700 font-bold" : "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-slate-400 hover:text-slate-700"}
-            >
-              <span className="text-lg">{tab.mobileIcon}</span>
-              <span className="text-[10px] mt-0.5 truncate">{tab.shortLabel}</span>
-            </button>
-          );
-        })}
-      </nav>
-
     </div>
   );
 }
