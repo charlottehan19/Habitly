@@ -453,8 +453,8 @@ export default function App() {
     { id: 'nutrition', label: '🥗 Food & Nutrition', mobileIcon: '🥗', shortLabel: 'Nutrition' },
     { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
     { id: 'reminders', label: '⏰ Reminders & Notifs', mobileIcon: '⏰', shortLabel: 'Reminders' },
-    ...(currentUser.role === 'patient' ? [{ id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' }] : [])
-  ];
+    currentUser.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
+  ].filter(Boolean);
 
   return (
     <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
