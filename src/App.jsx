@@ -8,7 +8,6 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // Verification code states
   const [enteredDoctorCode, setEnteredDoctorCode] = useState('');
 
   const generateDoctorCode = () => {
@@ -18,14 +17,10 @@ export default function App() {
 
   const [doctorCode] = useState(() => generateDoctorCode());
 
-  // Navigation tabs & Sidebar toggle state
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Push notification banner state
   const [notificationBanner, setNotificationBanner] = useState(null);
 
-  // Shared Patient Database
   const [patientsList, setPatientsList] = useState([
     {
       id: 1,
@@ -44,23 +39,19 @@ export default function App() {
   const [doctorInputMessage, setDoctorInputMessage] = useState('');
   const [patientInputMessage, setPatientInputMessage] = useState('');
 
-  // 1. Mood Tracker & Daily Check-In State
   const [todayMood, setTodayMood] = useState(null);
   const [moodCheckedInToday, setMoodCheckedInToday] = useState(false);
   const [stressLevel, setStressLevel] = useState(38);
   const [journalNote, setJournalNote] = useState('');
   const [journalSaved, setJournalSaved] = useState(false);
 
-  // 2. Substance Tracker State
   const [cigarettesToday, setCigarettesToday] = useState(4);
   const [alcoholToday, setAlcoholToday] = useState(1);
 
-  // 3. AI Report Generator State
   const [aiReportGenerating, setAiReportGenerating] = useState(false);
   const [aiReportGenerated, setAiReportGenerated] = useState(false);
   const [aiReportData, setAiReportData] = useState(null);
 
-  // 4. Habits State
   const [habitsList, setHabitsList] = useState([
     { id: 1, name: 'Morning Hydration (500ml water)', completed: true },
     { id: 2, name: '15-min Mindfulness & Breathing', completed: false },
@@ -69,7 +60,6 @@ export default function App() {
   ]);
   const [newHabitName, setNewHabitName] = useState('');
 
-  // 5. Reminders State
   const [remindersList, setRemindersList] = useState([
     { id: 1, title: 'Drink Water Check', time: '10:00 AM', status: 'Active' },
     { id: 2, title: 'Afternoon Posture & Stretch', time: '2:30 PM', status: 'Pending' },
@@ -78,11 +68,9 @@ export default function App() {
   const [newReminderTitle, setNewReminderTitle] = useState('');
   const [newReminderTime, setNewReminderTime] = useState('');
 
-  // 6. Food Scanner & Nutrition State
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
 
-  // 7. Exercise Planner State
   const [workoutActive, setWorkoutActive] = useState(false);
   const [workoutType, setWorkoutType] = useState('Cardio & Running');
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
@@ -93,7 +81,6 @@ export default function App() {
   const [newCustomWorkoutType, setNewCustomWorkoutType] = useState('');
   const [newCustomWorkoutDuration, setNewCustomWorkoutDuration] = useState('');
 
-  // Timer effect for workouts
   useEffect(() => {
     let interval = null;
     if (workoutActive) {
@@ -119,7 +106,6 @@ export default function App() {
     }, 4000);
   };
 
-  // Generate AI Report function
   const generateAiReport = () => {
     setAiReportGenerating(true);
     setAiReportGenerated(false);
@@ -134,7 +120,6 @@ export default function App() {
     }, 1800);
   };
 
-  // Handle Authentication
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     const formattedName = name.trim() || (role === 'doctor' ? 'Dr. Sarah Chen' : 'Patient User');
@@ -238,7 +223,6 @@ export default function App() {
     }, 2000);
   };
 
-  // 1. AUTH SCREEN
   if (!currentUser) {
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-teal-50/50 text-slate-800 p-4">
@@ -251,14 +235,14 @@ export default function App() {
             <button
               type="button"
               onClick={() => setAuthMode('login')}
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${authMode === 'login' ? 'bg-white text-teal-900 shadow-sm' : 'text-slate-500 hover:text-teal-900'}`}
+              className={authMode === 'login' ? "py-2 text-xs font-bold rounded-lg transition-all bg-white text-teal-900 shadow-sm" : "py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-teal-900"}
             >
               Log In
             </button>
             <button
               type="button"
               onClick={() => setAuthMode('signup')}
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${authMode === 'signup' ? 'bg-white text-teal-900 shadow-sm' : 'text-slate-500 hover:text-teal-900'}`}
+              className={authMode === 'signup' ? "py-2 text-xs font-bold rounded-lg transition-all bg-white text-teal-900 shadow-sm" : "py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-teal-900"}
             >
               Sign Up
             </button>
@@ -275,11 +259,7 @@ export default function App() {
                 type="button"
                 key={r.id}
                 onClick={() => setRole(r.id)}
-                className={`py-2 text-xs font-bold rounded-xl border transition-all ${
-                  role === r.id 
-                    ? 'bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/30' 
-                    : 'bg-teal-50/50 border-teal-100 text-teal-700 hover:bg-teal-100/50'
-                }`}
+                className={role === r.id ? "py-2 text-xs font-bold rounded-xl border transition-all bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/30" : "py-2 text-xs font-bold rounded-xl border transition-all bg-teal-50/50 border-teal-100 text-teal-700 hover:bg-teal-100/50"}
               >
                 {r.label}
               </button>
@@ -353,7 +333,6 @@ export default function App() {
     );
   }
 
-  // 2. DOCTOR VIEW
   if (currentUser.role === 'doctor') {
     const selectedPatient = patientsList.find(p => p.id === selectedPatientId) || patientsList[0];
 
@@ -363,7 +342,7 @@ export default function App() {
           <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
         )}
         
-        <div className={`absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={sidebarOpen ? "absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 translate-x-0" : "absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 -translate-x-full"}>
           <div>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
@@ -384,17 +363,13 @@ export default function App() {
                 <button
                   key={pat.id}
                   onClick={() => { setSelectedPatientId(pat.id); setSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${
-                    selectedPatientId === pat.id 
-                      ? 'bg-teal-600 border-teal-600 text-white shadow-md' 
-                      : 'bg-white border-teal-100 text-slate-700 hover:bg-teal-50/50'
-                  }`}
+                  className={selectedPatientId === pat.id ? "w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between bg-teal-600 border-teal-600 text-white shadow-md" : "w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between bg-white border-teal-100 text-slate-700 hover:bg-teal-50/50"}
                 >
                   <div className="overflow-hidden">
                     <p className="font-bold text-xs truncate">{pat.name}</p>
-                    <p className={`text-[10px] truncate ${selectedPatientId === pat.id ? 'text-teal-100' : 'text-slate-400'}`}>{pat.email}</p>
+                    <p className={selectedPatientId === pat.id ? "text-[10px] truncate text-teal-100" : "text-[10px] truncate text-slate-400"}>{pat.email}</p>
                   </div>
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${selectedPatientId === pat.id ? 'bg-white' : 'bg-teal-500'}`}></span>
+                  <span className={selectedPatientId === pat.id ? "w-2 h-2 rounded-full shrink-0 bg-white" : "w-2 h-2 rounded-full shrink-0 bg-teal-500"}></span>
                 </button>
               ))}
             </div>
@@ -434,7 +409,7 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
               {selectedPatient?.messages.map((msg, index) => (
-                <div key={index} className={`flex flex-col ${msg.sender === 'doctor' ? 'items-end' : 'items-start'}`}>
+                <div key={index} className={msg.sender === 'doctor' ? "flex flex-col items-end" : "flex flex-col items-start"}>
                   <div className="flex items-start space-x-3 max-w-xl">
                     {msg.sender === 'patient' && (
                       <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center text-xs font-bold justify-center text-white shadow-sm mt-1">
@@ -442,11 +417,7 @@ export default function App() {
                       </div>
                     )}
                     <div>
-                      <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                        msg.sender === 'doctor' 
-                          ? 'bg-teal-600 text-white rounded-tr-none shadow-md shadow-teal-600/20' 
-                          : 'bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100'
-                      }`}>
+                      <div className={msg.sender === 'doctor' ? "p-4 rounded-2xl text-sm leading-relaxed bg-teal-600 text-white rounded-tr-none shadow-md shadow-teal-600/20" : "p-4 rounded-2xl text-sm leading-relaxed bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100"}>
                         {msg.text}
                       </div>
                       <span className="text-[11px] text-slate-400 mt-1 block">{msg.time}</span>
@@ -472,7 +443,6 @@ export default function App() {
     );
   }
 
-  // 3. PATIENT OR PERSONAL VIEW
   const currentPatientData = patientsList.find(p => p.name === currentUser.name) || patientsList[0];
 
   const navTabs = [
@@ -500,7 +470,7 @@ export default function App() {
         <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className={`absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={sidebarOpen ? "absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 translate-x-0" : "absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 -translate-x-full"}>
         <div>
           <div className="flex items-center justify-between mb-8">
             <img src="/logo.jpg" alt="Habitly Logo" className="w-32 h-12 object-contain" />
@@ -512,7 +482,7 @@ export default function App() {
               <button 
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} 
-                className={`w-full text-left py-2.5 px-3 rounded-xl transition-colors ${activeTab === tab.id ? 'bg-teal-50 border border-teal-200/60 text-teal-800 font-semibold shadow-sm' : 'hover:bg-teal-50 hover:text-teal-900'}`}
+                className={activeTab === tab.id ? "w-full text-left py-2.5 px-3 rounded-xl transition-colors bg-teal-50 border border-teal-200/60 text-teal-800 font-semibold shadow-sm" : "w-full text-left py-2.5 px-3 rounded-xl transition-colors hover:bg-teal-50 hover:text-teal-900"}
               >
                 {tab.label}
               </button>
@@ -645,9 +615,9 @@ export default function App() {
 
                   <div className="space-y-3">
                     {habitsList.map((habit) => (
-                      <div key={habit.id} onClick={() => toggleHabit(habit.id)} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${habit.completed ? 'bg-teal-50/60 border-teal-200' : 'bg-white border-slate-100'}`}>
-                        <span className={`text-sm font-medium ${habit.completed ? 'line-through text-teal-900/60' : 'text-slate-800'}`}>{habit.name}</span>
-                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${habit.completed ? 'bg-teal-600 text-white' : 'border border-slate-300 text-transparent'}`}>✓</span>
+                      <div key={habit.id} onClick={() => toggleHabit(habit.id)} className={habit.completed ? "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-teal-50/60 border-teal-200" : "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-white border-slate-100"}>
+                        <span className={habit.completed ? "text-sm font-medium line-through text-teal-900/60" : "text-sm font-medium text-slate-800"}>{habit.name}</span>
+                        <span className={habit.completed ? "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold bg-teal-600 text-white" : "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold border border-slate-300 text-transparent"}>✓</span>
                       </div>
                     ))}
                   </div>
@@ -679,11 +649,7 @@ export default function App() {
                             setTodayMood(`${m.emoji} ${m.label}`);
                             setMoodCheckedInToday(true);
                           }}
-                          className={`p-4 rounded-2xl border text-center transition-all ${
-                            todayMood === `${m.emoji} ${m.label}`
-                              ? 'bg-teal-600 border-teal-600 text-white shadow-md'
-                              : 'bg-teal-50/30 border-teal-100 hover:bg-teal-50 text-slate-800'
-                          }`}
+                          className={todayMood === `${m.emoji} ${m.label}` ? "p-4 rounded-2xl border text-center transition-all bg-teal-600 border-teal-600 text-white shadow-md" : "p-4 rounded-2xl border text-center transition-all bg-teal-50/30 border-teal-100 hover:bg-teal-50 text-slate-800"}
                         >
                           <span className="text-2xl block mb-1">{m.emoji}</span>
                           <span className="text-xs font-bold">{m.label}</span>
@@ -782,7 +748,7 @@ export default function App() {
                       <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2">{workoutType}</p>
                       <h2 className="text-4xl font-mono font-bold text-teal-950 mb-4">{formatTime(workoutSeconds)}</h2>
                       <div className="flex justify-center gap-3">
-                        <button onClick={() => setWorkoutActive(!workoutActive)} className={`px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md ${workoutActive ? 'bg-amber-600' : 'bg-teal-600'}`}>
+                        <button onClick={() => setWorkoutActive(!workoutActive)} className={workoutActive ? "px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md bg-amber-600" : "px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md bg-teal-600"}>
                           {workoutActive ? 'Pause Workout' : 'Start Workout'}
                         </button>
                         <button onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }} className="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Reset</button>
@@ -883,8 +849,8 @@ export default function App() {
                 <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col h-[450px] sm:h-[500px]">
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
                     {currentPatientData.messages.map((msg, idx) => (
-                      <div key={idx} className={`flex flex-col ${msg.sender === 'patient' ? 'items-end' : 'items-start'}`}>
-                        <div className={`p-4 rounded-2xl text-sm max-w-md ${msg.sender === 'patient' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-teal-50 text-slate-800 rounded-tl-none border border-teal-100'}`}>
+                      <div key={idx} className={msg.sender === 'patient' ? "flex flex-col items-end" : "flex flex-col items-start"}>
+                        <div className={msg.sender === 'patient' ? "p-4 rounded-2xl text-sm max-w-md bg-teal-600 text-white rounded-tr-none" : "p-4 rounded-2xl text-sm max-w-md bg-teal-50 text-slate-800 rounded-tl-none border border-teal-100"}>
                           {msg.text}
                         </div>
                         <span className="text-[10px] text-slate-400 mt-1">{msg.time}</span>
@@ -916,9 +882,7 @@ export default function App() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors ${
-                isActive ? 'text-teal-700 font-bold' : 'text-slate-400 hover:text-slate-700'
-              }`}
+              className={isActive ? "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-teal-700 font-bold" : "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-slate-400 hover:text-slate-700"}
             >
               <span className="text-lg">{tab.mobileIcon}</span>
               <span className="text-[10px] mt-0.5 truncate">{tab.shortLabel}</span>
