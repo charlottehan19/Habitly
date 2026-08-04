@@ -54,8 +54,6 @@ export default function App() {
   // 2. Substance Tracker State
   const [cigarettesToday, setCigarettesToday] = useState(4);
   const [alcoholToday, setAlcoholToday] = useState(1);
-  const [weeklyCigarettes, setWeeklyCigarettes] = useState([5, 4, 6, 3, 5, 7, 4]);
-  const [weeklyAlcohol, setWeeklyAlcohol] = useState([1, 2, 2, 0, 2, 3, 1]);
 
   // 3. AI Report Generator State
   const [aiReportGenerating, setAiReportGenerating] = useState(false);
@@ -81,12 +79,6 @@ export default function App() {
   const [newReminderTime, setNewReminderTime] = useState('');
 
   // 6. Food Scanner & Nutrition State
-  const [nutritionLogs, setNutritionLogs] = useState([
-    { id: 1, meal: 'Avocado Toast & Eggs', calories: '420 kcal', protein: '18g', time: '8:30 AM' },
-    { id: 2, meal: 'Grilled Chicken Salad', calories: '550 kcal', protein: '35g', time: '1:15 PM' }
-  ]);
-  const [newMealName, setNewMealName] = useState('');
-  const [newMealCalories, setNewMealCalories] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
 
@@ -367,12 +359,10 @@ export default function App() {
 
     return (
       <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
-        {/* Backdrop overlay when sidebar drawer is open */}
         {sidebarOpen && (
           <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
         )}
         
-        {/* Toggleable Slide-over Sidebar for Doctor */}
         <div className={`absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -499,7 +489,6 @@ export default function App() {
   return (
     <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
       
-      {/* Phone Notification Banner Toast */}
       {notificationBanner && (
         <div className="absolute top-4 right-4 z-50 bg-teal-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-teal-400 flex items-center space-x-3 animate-bounce">
           <span className="text-xl">📱</span>
@@ -507,12 +496,10 @@ export default function App() {
         </div>
       )}
 
-      {/* Backdrop overlay when sidebar drawer is open */}
       {sidebarOpen && (
         <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Fully Collapsible Slide-over Sidebar Navigation */}
       <div className={`absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div>
           <div className="flex items-center justify-between mb-8">
@@ -547,10 +534,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Area Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Top Header with Menu Button */}
         <header className="bg-white border-b border-teal-100 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 shadow-sm">
           <div className="flex items-center space-x-3">
             <button 
@@ -567,11 +552,9 @@ export default function App() {
           </div>
         </header>
 
-        {/* Scrollable Main Content with generous bottom clearance (pb-32) */}
         <main className="flex-1 bg-teal-50/20 p-4 sm:p-8 overflow-y-auto pb-32 md:pb-8">
           <div className="max-w-5xl mx-auto space-y-6">
 
-            {/* DASHBOARD TAB */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
                 <div>
@@ -579,7 +562,6 @@ export default function App() {
                   <p className="text-xs text-slate-500">Here is your daily wellness snapshot and activity summary.</p>
                 </div>
 
-                {/* Daily Mood Check-In Reminder Banner */}
                 {!moodCheckedInToday && (
                   <div className="bg-white border-2 border-teal-500 rounded-2xl p-5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-50/80 to-white">
                     <div className="flex items-center space-x-4">
@@ -617,7 +599,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* AI Report Generator Quick Widget */}
                 <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <div>
@@ -645,7 +626,6 @@ export default function App() {
               </div>
             )}
 
-            {/* HABITS TAB */}
             {activeTab === 'habits' && (
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Daily Habit Tracker</h1>
@@ -675,7 +655,6 @@ export default function App() {
               </div>
             )}
 
-            {/* MOOD TRACKER TAB */}
             {activeTab === 'mood' && (
               <div className="max-w-4xl space-y-6">
                 <div>
@@ -713,7 +692,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Stress Level Slider */}
                   <div className="pt-4 border-t border-teal-100">
                     <div className="flex justify-between items-center mb-2">
                       <label className="text-xs font-bold text-teal-950 uppercase tracking-wider">Stress Level: {stressLevel}%</label>
@@ -729,7 +707,6 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Daily Reflection Journal Note */}
                   <div className="pt-4 border-t border-teal-100 space-y-3">
                     <label className="text-xs font-bold text-teal-950 uppercase tracking-wider block">Daily Reflection Journal</label>
                     <textarea
@@ -755,7 +732,6 @@ export default function App() {
               </div>
             )}
 
-            {/* SUBSTANCE TAB */}
             {activeTab === 'substance' && (
               <div className="space-y-6 max-w-3xl">
                 <div>
@@ -772,7 +748,6 @@ export default function App() {
               </div>
             )}
 
-            {/* NUTRITION TAB */}
             {activeTab === 'nutrition' && (
               <div className="space-y-6 max-w-3xl">
                 <div>
@@ -794,7 +769,6 @@ export default function App() {
               </div>
             )}
 
-            {/* EXERCISE TAB */}
             {activeTab === 'exercise' && (
               <div className="space-y-6 max-w-3xl">
                 <div>
@@ -803,7 +777,6 @@ export default function App() {
                 </div>
                 
                 <div className="space-y-6">
-                  {/* Timer Box */}
                   <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
                     <div className="p-6 bg-teal-50/60 rounded-2xl border border-teal-200 text-center">
                       <p className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2">{workoutType}</p>
@@ -817,7 +790,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Custom Workout Creator & History */}
                   <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
                     <h3 className="font-bold text-sm text-teal-950">Add Custom Workout Session</h3>
                     <form onSubmit={handleAddCustomWorkout} className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2">
@@ -857,7 +829,6 @@ export default function App() {
               </div>
             )}
 
-            {/* REMINDERS TAB */}
             {activeTab === 'reminders' && (
               <div className="space-y-6 max-w-3xl">
                 <div>
@@ -903,7 +874,6 @@ export default function App() {
               </div>
             )}
 
-            {/* DOCTOR CHAT TAB */}
             {activeTab === 'doctor' && currentUser.role === 'patient' && (
               <div className="space-y-6 max-w-3xl">
                 <div>
@@ -939,7 +909,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-200 z-50 md:hidden flex justify-around items-center py-2 px-1 shadow-lg">
         {navTabs.map(tab => {
           const isActive = activeTab === tab.id;
@@ -957,3 +926,7 @@ export default function App() {
           );
         })}
       </nav>
+
+    </div>
+  );
+}
