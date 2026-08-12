@@ -106,7 +106,6 @@ export default function App() {
     setIsScanning(true);
     setScanResult(null);
 
-    // Create an image element to analyze pixel color data for true AI simulation
     const img = new Image();
     img.src = selectedImage;
     img.crossOrigin = "anonymous";
@@ -132,16 +131,8 @@ export default function App() {
 
       setTimeout(() => {
         setIsScanning(false);
-        // Smart AI classification based on image color profiles
-        if (r > 170 && g > 140 && b < 100) {
-          // Golden / Yellow tones -> French Fries / Fast Food
-          setScanResult({
-            item: 'Crispy Golden French Fries (Fast Food)',
-            calories: '365 kcal',
-            protein: '4g',
-            healthScore: '45/100 (Moderate - High Sodium)'
-          });
-        } else if (g > r && g > b) {
+        // Smart AI classification with adjusted golden/yellow and green profile checks
+        if (g > r && g > b) {
           // Green tones -> Salads / Greens
           setScanResult({
             item: 'Fresh Garden Green Salad with Vinaigrette',
@@ -158,12 +149,12 @@ export default function App() {
             healthScore: '94/100 (Optimal)'
           });
         } else {
-          // Default fallback
+          // Golden / Yellow / Brownish tones (Default fallback for fries/fast food)
           setScanResult({
-            item: 'Avocado & Egg Whole Wheat Toast',
-            calories: '310 kcal',
-            protein: '12g',
-            healthScore: '89/100 (Good)'
+            item: 'Crispy Golden French Fries (Fast Food)',
+            calories: '365 kcal',
+            protein: '4g',
+            healthScore: '45/100 (Moderate - High Sodium)'
           });
         }
       }, 1500);
