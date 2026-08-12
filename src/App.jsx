@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('habitly_current_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('habitly_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('habitly_current_user');
+    }
+  }, [currentUser]);
+
   const [authMode, setAuthMode] = useState('login');
   const [role, setRole] = useState('patient');
   const [name, setName] = useState('');
@@ -27,10 +43,10 @@ export default function App() {
       name: 'Alex Johnson',
       email: 'alex@example.com',
       code: 'HABITLY-DR-4921',
-      metrics: { sleep: '7.2 hrs', hydration: '72%', stress: 'Moderate', habitsStreak: '14 days' },
+      metrics: { water: '1800 ml', nicotine: '12 mg', alcohol: '1 unit', habitsStreak: '14 days' },
       messages: [
-        { sender: 'doctor', text: "Good morning Alex! Let's check your weekly health report.", time: '8:02 AM' },
-        { sender: 'patient', text: "Thanks Dr. Chen! Working on my morning routine.", time: '8:15 AM' }
+        { sender: 'doctor', text: "Good morning Alex! Let's review your weekly intake report.", time: '8:02 AM' },
+        { sender: 'patient', text: "Thanks Dr. Chen! Keeping up with my hydration and patch routine.", time: '8:15 AM' }
       ]
     }
   ]);
@@ -45,8 +61,10 @@ export default function App() {
   const [journalNote, setJournalNote] = useState('');
   const [journalSaved, setJournalSaved] = useState(false);
 
-  const [cigarettesToday, setCigarettesToday] = useState(4);
-  const [alcoholToday, setAlcoholToday] = useState(1);
+  // Core Trio: Water, Nicotine, Alcohol
+  const [waterToday, setWaterToday] = useState(1750); // in ml
+  const [nicotineToday, setNicotineToday] = useState(14); // in mg
+  const [alcoholToday, setAlcoholToday] = useState(1); // standard units
 
   const [aiReportGenerating, setAiReportGenerating] = useState(false);
   const [aiReportGenerated, setAiReportGenerated] = useState(false);
@@ -55,21 +73,48 @@ export default function App() {
   const [habitsList, setHabitsList] = useState([
     { id: 1, name: 'Morning Hydration (500ml water)', completed: true },
     { id: 2, name: '15-min Mindfulness & Breathing', completed: false },
-    { id: 3, name: 'Take Prescribed Vitamins', completed: true },
+    { id: 3, name: 'Apply Nicotine Replacement Patch', completed: true },
     { id: 4, name: 'No screen time 1 hr before sleep', completed: false }
   ]);
   const [newHabitName, setNewHabitName] = useState('');
 
   const [remindersList, setRemindersList] = useState([
-    { id: 1, title: 'Drink Water Check', time: '10:00 AM', status: 'Active' },
-    { id: 2, title: 'Afternoon Posture & Stretch', time: '2:30 PM', status: 'Pending' },
-    { id: 3, title: 'Evening Walk & Wind Down', time: '7:00 PM', status: 'Pending' }
+    { id: 1, title: 'Water Intake Check', time: '10:00 AM', status: 'Active' },
+    { id: 2, title: 'Patch Replacement Reminder', time: '2:30 PM', status: 'Pending' },
+    { id: 3, title: 'Evening Wind Down', time: '7:00 PM', status: 'Pending' }
   ]);
   const [newReminderTitle, setNewReminderTitle] = useState('');
   const [newReminderTime, setNewReminderTime] = useState('');
 
+  // Food Scanner States
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(URL.createObjectURL(file));
+      setScanResult(null);
+    }
+  };
+
+  const simulateFoodScan = () => {
+    if (!selectedImage) return;
+    setIsScanning(true);
+    setScanResult(null);
+    setTimeout(() => {
+      setIsScanning(false);
+      const possibleResults = [
+        { item: 'Grilled Salmon Bowl with Quinoa', calories: '480 kcal', protein: '32g', healthScore: '94/100 (Optimal)' },
+        { item: 'Avocado & Egg Whole Wheat Toast', calories: '350 kcal', protein: '18g', healthScore: '90/100 (Great)' },
+        { item: 'Chicken Teriyaki Rice Bowl', calories: '520 kcal', protein: '38g', healthScore: '85/100 (Good)' },
+        { item: 'Green Detox Smoothie & Granola', calories: '290 kcal', protein: '12g', healthScore: '96/100 (Optimal)' }
+      ];
+      const randomResult = possibleResults[Math.floor(Math.random() * possibleResults.length)];
+      setScanResult(randomResult);
+    }, 2000);
+  };
 
   const [workoutActive, setWorkoutActive] = useState(false);
   const [workoutType, setWorkoutType] = useState('Cardio & Running');
@@ -100,7 +145,7 @@ export default function App() {
   };
 
   const triggerPhoneNotification = (title) => {
-    setNotificationBanner(`📱 Push Notification sent to phone: "${title}" reminder triggered!`);
+    setNotificationBanner(`📱 Bio-Patch Notification sent: "${title}" triggered!`);
     setTimeout(() => {
       setNotificationBanner(null);
     }, 4000);
@@ -113,9 +158,9 @@ export default function App() {
       setAiReportGenerating(false);
       setAiReportGenerated(true);
       setAiReportData({
-        summary: "Overall wellness is stable with consistent hydration and habit streaks.",
-        substanceNote: `Current cigarette intake averages ${cigarettesToday} daily (moderate CO exposure ~9 ppm). Alcohol intake is within low-risk limits (1 standard drink/day).`,
-        recommendation: "Focus on reducing evening cigarette intake by 1 unit this week and maintain your 14-day habit streak."
+        summary: "Hydration levels are optimal and daily habit streaks remain strong.",
+        substanceNote: `Nicotine intake averages ${nicotineToday} mg daily via patch monitoring. Alcohol intake is maintained at ${alcoholToday} standard unit.`,
+        recommendation: "Continue steady patch reduction schedule and maintain your 2000ml daily water goal."
       });
     }, 1800);
   };
@@ -140,9 +185,9 @@ export default function App() {
           name: formattedName,
           email,
           code: enteredDoctorCode || doctorCode,
-          metrics: { sleep: '7.0 hrs', hydration: '60%', stress: 'Normal', habitsStreak: '1 day' },
+          metrics: { water: '1750 ml', nicotine: '14 mg', alcohol: '1 unit', habitsStreak: '1 day' },
           messages: [
-            { sender: 'doctor', text: `Welcome to Habitly, ${formattedName}! Your account is now linked.`, time: 'Just now' }
+            { sender: 'doctor', text: `Welcome to Habitly, ${formattedName}! Bio-patch sync active.`, time: 'Just now' }
           ]
         };
         setPatientsList(prev => [...prev, newPatientEntry]);
@@ -214,21 +259,13 @@ export default function App() {
     setNewCustomWorkoutDuration('');
   };
 
-  const simulateFoodScan = () => {
-    setIsScanning(true);
-    setScanResult(null);
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanResult({ item: 'Grilled Salmon Bowl with Quinoa', calories: '480 kcal', protein: '32g', healthScore: '94/100 (Optimal)' });
-    }, 2000);
-  };
-
   if (!currentUser) {
     return (
       <div className="flex h-[100dvh] items-center justify-center bg-teal-50/50 text-slate-800 p-4">
         <form onSubmit={handleAuthSubmit} className="w-full max-w-md p-6 sm:p-8 bg-white rounded-3xl border border-teal-100 shadow-2xl shadow-teal-900/10">
           <div className="flex flex-col items-center mb-6">
             <img src="/logo.jpg" alt="Habitly Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 rounded-2xl shadow-sm" />
+            <span className="text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">Bio-Patch Wellness Dashboard</span>
           </div>
 
           <div className="grid grid-cols-2 gap-1 bg-teal-50/60 p-1 rounded-xl mb-6 border border-teal-100">
@@ -392,19 +429,19 @@ export default function App() {
               </button>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-teal-950">Patient File: {selectedPatient?.name}</h1>
-                <p className="text-xs text-slate-500">Secure overview and direct communication channel.</p>
+                <p className="text-xs text-slate-500">Secure overview and direct bio-patch communication channel.</p>
               </div>
             </div>
             <div className="hidden sm:flex gap-2">
-              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Sleep: {selectedPatient?.metrics.sleep}</span>
-              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Hydration: {selectedPatient?.metrics.hydration}</span>
+              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Water: {selectedPatient?.metrics.water}</span>
+              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Nicotine: {selectedPatient?.metrics.nicotine}</span>
             </div>
           </div>
 
           <div className="flex-1 bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 flex flex-col shadow-lg shadow-teal-950/5">
             <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
               <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Direct Messaging</span>
-              <span className="text-xs text-teal-600 font-medium">● Secure Channel</span>
+              <span className="text-xs text-teal-600 font-medium">● Bio-Patch Secure Channel</span>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
@@ -449,10 +486,10 @@ export default function App() {
     { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊', shortLabel: 'Home' },
     { id: 'habits', label: '✅ Daily Habits', mobileIcon: '✅', shortLabel: 'Habits' },
     { id: 'mood', label: '😊 Mood Tracker', mobileIcon: '😊', shortLabel: 'Mood' },
-    { id: 'substance', label: '🚬 Substance Tracker', mobileIcon: '🚬', shortLabel: 'Substance' },
-    { id: 'nutrition', label: '🥗 Food & Nutrition', mobileIcon: '🥗', shortLabel: 'Nutrition' },
+    { id: 'substance', label: '💧 Intake & Patch', mobileIcon: '💧', shortLabel: 'Intake' },
+    { id: 'nutrition', label: '🥗 Food Scanner', mobileIcon: '🥗', shortLabel: 'Food' },
     { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
-    { id: 'reminders', label: '⏰ Reminders & Notifs', mobileIcon: '⏰', shortLabel: 'Reminders' },
+    { id: 'reminders', label: '⏰ Reminders', mobileIcon: '⏰', shortLabel: 'Reminders' },
     currentUser.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
   ].filter(Boolean);
 
@@ -514,7 +551,10 @@ export default function App() {
             >
               <span className="text-base">☰</span> Menu
             </button>
-            <span className="font-bold text-teal-900 text-base sm:text-lg">Habitly</span>
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-teal-900 text-base sm:text-lg">Habitly</span>
+              <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-bold hidden sm:inline">🟢 Bio-Patch Active</span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-600 font-medium hidden sm:inline">{currentUser.name}</span>
@@ -529,7 +569,7 @@ export default function App() {
               <div className="space-y-6">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Welcome back, {currentUser.name}!</h1>
-                  <p className="text-xs text-slate-500">Here is your daily wellness snapshot and activity summary.</p>
+                  <p className="text-xs text-slate-500">Bio-patch live monitoring: tracking water, nicotine, and alcohol metrics.</p>
                 </div>
 
                 {!moodCheckedInToday && (
@@ -552,16 +592,16 @@ export default function App() {
                 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Today's Mood</span>
-                    <span className="text-lg sm:text-xl font-bold text-teal-950">{todayMood || 'Pending ⚠️'}</span>
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Water Intake</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{waterToday} ml 💧</span>
                   </div>
                   <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Hydration</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">72% 💧</span>
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Nicotine (Patch)</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{nicotineToday} mg 🩹</span>
                   </div>
                   <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Sleep Average</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">7.2 hrs 🌙</span>
+                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Alcohol Units</span>
+                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{alcoholToday} unit 🍷</span>
                   </div>
                   <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
                     <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Habit Streak</span>
@@ -572,23 +612,23 @@ export default function App() {
                 <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <div>
-                      <h3 className="font-bold text-sm text-teal-950">AI Health Report & Tracker</h3>
-                      <p className="text-xs text-slate-500">Generate an AI-analyzed progress report based on your recent habit, mood, and substance logs.</p>
+                      <h3 className="font-bold text-sm text-teal-950">AI Bio-Patch Progress Report</h3>
+                      <p className="text-xs text-slate-500">Generate an AI-analyzed summary of your water absorption, nicotine tapering, and lifestyle metrics.</p>
                     </div>
                     <button 
                       onClick={generateAiReport}
                       disabled={aiReportGenerating}
                       className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-md transition-all shrink-0"
                     >
-                      {aiReportGenerating ? 'Analyzing Data...' : 'Generate AI Report'}
+                      {aiReportGenerating ? 'Analyzing Patch Data...' : 'Generate AI Report'}
                     </button>
                   </div>
 
                   {aiReportGenerated && aiReportData && (
                     <div className="mt-4 p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs space-y-2">
-                      <p className="font-bold text-teal-950 text-sm">✨ Weekly AI Summary & Insights</p>
+                      <p className="font-bold text-teal-950 text-sm">✨ Weekly Bio-Patch Summary & Insights</p>
                       <p className="text-slate-700"><strong>Overview:</strong> {aiReportData.summary}</p>
-                      <p className="text-slate-700"><strong>Substance Log:</strong> {aiReportData.substanceNote}</p>
+                      <p className="text-slate-700"><strong>Intake Monitor:</strong> {aiReportData.substanceNote}</p>
                       <p className="text-teal-800 font-semibold"><strong>Recommendation:</strong> {aiReportData.recommendation}</p>
                     </div>
                   )}
@@ -599,7 +639,7 @@ export default function App() {
             {activeTab === 'habits' && (
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Daily Habit Tracker</h1>
-                <p className="text-xs text-slate-500 mb-6">Check off routines or add your own custom habit items.</p>
+                <p className="text-xs text-slate-500 mb-6">Check off routines or add your own custom wellness habits.</p>
 
                 <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm max-w-2xl space-y-4">
                   <form onSubmit={handleAddCustomHabit} className="flex flex-col sm:flex-row gap-2 pb-2 border-b border-teal-100">
@@ -607,7 +647,7 @@ export default function App() {
                       type="text" 
                       value={newHabitName}
                       onChange={(e) => setNewHabitName(e.target.value)}
-                      placeholder="Add custom habit (e.g. Read 20 pages)..."
+                      placeholder="Add custom habit (e.g. Drink 500ml water)..."
                       className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
                     />
                     <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Habit</button>
@@ -698,23 +738,38 @@ export default function App() {
             {activeTab === 'substance' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Substance Tracker</h1>
-                  <p className="text-xs text-slate-500">Log daily habits transparently for your wellness goals and reports.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Water, Nicotine & Alcohol Tracker</h1>
+                  <p className="text-xs text-slate-500">Live data synced from your wearable bio-patch sensors.</p>
                 </div>
 
                 <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
+                  {/* Water Tracker */}
                   <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
                     <div>
-                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Cigarettes Today</h3>
-                      <p className="text-xs text-slate-500">Estimated CO exposure ~9 ppm</p>
+                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Water Intake Today</h3>
+                      <p className="text-xs text-slate-500">Target: 2000 ml daily</p>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <button onClick={() => setCigarettesToday(Math.max(0, cigarettesToday - 1))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
-                      <span className="font-bold text-sm text-teal-950 w-6 text-center">{cigarettesToday}</span>
-                      <button onClick={() => setCigarettesToday(cigarettesToday + 1)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
+                      <button onClick={() => setWaterToday(Math.max(0, waterToday - 250))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-250</button>
+                      <span className="font-bold text-xs text-teal-950 w-16 text-center">{waterToday} ml</span>
+                      <button onClick={() => setWaterToday(waterToday + 250)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+250</button>
                     </div>
                   </div>
 
+                  {/* Nicotine Tracker */}
+                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
+                    <div>
+                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Nicotine Absorption (Patch)</h3>
+                      <p className="text-xs text-slate-500">Tapering schedule active</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button onClick={() => setNicotineToday(Math.max(0, nicotineToday - 2))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
+                      <span className="font-bold text-sm text-teal-950 w-8 text-center">{nicotineToday} mg</span>
+                      <button onClick={() => setNicotineToday(nicotineToday + 2)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
+                    </div>
+                  </div>
+
+                  {/* Alcohol Tracker */}
                   <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
                     <div>
                       <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Alcohol (Standard Units)</h3>
@@ -734,24 +789,51 @@ export default function App() {
               <div className="space-y-6">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Food & Nutrition Scanner</h1>
-                  <p className="text-xs text-slate-500">Simulate scanning meal photos to analyze nutritional content.</p>
+                  <p className="text-xs text-slate-500">Upload a meal photo or snap a picture with your camera to analyze calories and nutrients.</p>
                 </div>
 
                 <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4 text-center">
-                  <div className="border-2 border-dashed border-teal-200 rounded-2xl p-8 bg-teal-50/30 flex flex-col items-center justify-center space-y-3">
-                    <span className="text-4xl">🥗</span>
-                    <p className="text-xs font-bold text-teal-900">Upload or Snap a Meal Photo</p>
+                  <div className="border-2 border-dashed border-teal-200 rounded-2xl p-6 bg-teal-50/30 flex flex-col items-center justify-center space-y-3">
+                    
+                    {selectedImage ? (
+                      <div className="flex flex-col items-center space-y-3 w-full">
+                        <img src={selectedImage} alt="Meal Preview" className="w-48 h-48 object-cover rounded-xl shadow-md border border-teal-200" />
+                        <label htmlFor="meal-image-input" className="text-xs text-teal-700 font-bold underline cursor-pointer">
+                          Change photo
+                        </label>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-4xl">🥗</span>
+                        <p className="text-xs font-bold text-teal-900">Upload or Snap a Meal Photo</p>
+                        <label htmlFor="meal-image-input" className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer transition-all inline-block">
+                          Choose or Take Photo 📸
+                        </label>
+                      </>
+                    )}
+
+                    <input 
+                      id="meal-image-input"
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment"
+                      onChange={handleImageUpload}
+                      className="hidden" 
+                    />
+                  </div>
+
+                  {selectedImage && !scanResult && (
                     <button 
                       onClick={simulateFoodScan}
                       disabled={isScanning}
-                      className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"
+                      className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
                     >
-                      {isScanning ? 'Analyzing Meal...' : 'Scan Meal Photo'}
+                      {isScanning ? 'Analyzing Meal Photo...' : 'Run Bio-Scan on Photo'}
                     </button>
-                  </div>
+                  )}
 
                   {scanResult && (
-                    <div className="p-4 bg-teal-50/70 rounded-xl border border-teal-200 text-left text-xs space-y-1">
+                    <div className="p-4 bg-teal-50/70 rounded-xl border border-teal-200 text-left text-xs space-y-1.5 animate-fade-in">
                       <p className="font-bold text-teal-950 text-sm">✨ Scan Result: {scanResult.item}</p>
                       <p className="text-slate-700"><strong>Calories:</strong> {scanResult.calories}</p>
                       <p className="text-slate-700"><strong>Protein:</strong> {scanResult.protein}</p>
@@ -826,8 +908,8 @@ export default function App() {
             {activeTab === 'reminders' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Reminders & Push Notifications</h1>
-                  <p className="text-xs text-slate-500">Manage daily reminders and test simulated phone push notifications.</p>
+                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Reminders & Bio-Patch Notifications</h1>
+                  <p className="text-xs text-slate-500">Manage daily reminders and test simulated patch push notifications.</p>
                 </div>
 
                 <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
@@ -873,7 +955,7 @@ export default function App() {
               <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col h-[600px]">
                 <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
                   <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Doctor Communication Channel</span>
-                  <span className="text-xs text-teal-600 font-medium">● Secure</span>
+                  <span className="text-xs text-teal-600 font-medium">● Bio-Patch Secure</span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
