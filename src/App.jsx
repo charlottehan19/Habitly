@@ -165,6 +165,45 @@ const [patchStatus, setPatchStatus] = useState('disconnected');
     }
   };
 
+        // Patch
+  const handleConnectPatch = async () => {
+    setPatchStatus('scanning');
+    
+    try {
+      if (navigator.bluetooth) {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['battery_service']
+        });
+        
+        setConnectedDevice(device.name || 'Habitly Bio-Patch');
+        setPatchStatus('connected');
+        setPatchBattery(Math.floor(65 + Math.random() * 35));
+        setNotificationBanner(`🔗 Successfully connected to ${device.name || 'Bio-Patch'}!`);
+        return;
+      }
+    } catch (err) {
+      console.log('Bluetooth unavailable or cancelled, using simulation mode:', err);
+    }
+
+    // Fallback simulation if Web Bluetooth isn't supported or active
+    setTimeout(() => {
+      setConnectedDevice('Habitly Bio-Patch v2.4');
+      setPatchStatus('connected');
+      setPatchBattery(88);
+      setNotificationBanner('🔗 Simulated Bio-Patch Connected Successfully!');
+      setTimeout(() => setNotificationBanner(null), 4000);
+    }, 2000);
+  };
+
+  const handleDisconnectPatch = () => {
+    setPatchStatus('disconnected');
+    setConnectedDevice(null);
+    setPatchBattery(null);
+    setNotificationBanner('🔌 Bio-Patch Disconnected.');
+    setTimeout(() => setNotificationBanner(null), 4000);
+  };
+
   const [workoutActive, setWorkoutActive] = useState(false);
   const [workoutType, setWorkoutType] = useState('Cardio & Running');
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
