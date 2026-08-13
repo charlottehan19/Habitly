@@ -23,170 +23,133 @@ export default function App() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   const [enteredDoctorCode, setEnteredDoctorCode] = useState('');
-const [patchStatus, setPatchStatus] = useState('disconnected');
+
+  // Patch Connection States
+  const [patchStatus, setPatchStatus] = useState('disconnected');
   const [connectedDevice, setConnectedDevice] = useState(null);
   const [patchBattery, setPatchBattery] = useState(null);
   const [sensorHeartRate, setSensorHeartRate] = useState(72);
+
   const generateDoctorCode = () => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     return `HABITLY-DR-${randomNum}`;
   };
 
-  const [doctorCode] = useState(() => generateDoctorCode());
+  const [doctorCode, setDoctorCode] = useState(() => {
+    const saved = localStorage.getItem('habitly_doctor_code');
+    if (saved) return saved;
+    const newCode = generateDoctorCode();
+    localStorage.setItem('habitly_doctor_code', newCode);
+    return newCode;
+  });
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationBanner, setNotificationBanner] = useState(null);
 
-  const [patientsList, setPatientsList] = useState([
-    {
-      id: 1,
-      name: 'Alex Johnson',
-      email: 'alex@example.com',
-      code: 'HABITLY-DR-4921',
-      metrics: { water: '1800 ml', nicotine: '12 mg', alcohol: '1 unit', habitsStreak: '14 days' },
-      messages: [
-        { sender: 'doctor', text: "Good morning Alex! Let's review your weekly intake report.", time: '8:02 AM' },
-        { sender: 'patient', text: "Thanks Dr. Chen! Keeping up with my hydration and patch routine.", time: '8:15 AM' }
-      ]
-    }
-  ]);
-
-  const [selectedPatientId, setSelectedPatientId] = useState(1);
-  const [doctorInputMessage, setDoctorInputMessage] = useState('');
-  const [patientInputMessage, setPatientInputMessage] = useState('');
-
+  // Wellness & Mood States
   const [todayMood, setTodayMood] = useState(null);
   const [moodCheckedInToday, setMoodCheckedInToday] = useState(false);
-  const [stressLevel, setStressLevel] = useState(38);
+  const [stressLevel, setStressLevel] = useState(30);
   const [journalNote, setJournalNote] = useState('');
   const [journalSaved, setJournalSaved] = useState(false);
 
-  const [waterToday, setWaterToday] = useState(1750);
-  const [nicotineToday, setNicotineToday] = useState(14);
-  const [alcoholToday, setAlcoholToday] = useState(1);
+  // Substance & Intake States
+  const [waterToday, setWaterToday] = useState(1200);
+  const [nicotineToday, setNicotineToday] = useState(8);
+  const [alcoholToday, setAlcoholToday] = useState(0);
 
+  // AI Report States
   const [aiReportGenerating, setAiReportGenerating] = useState(false);
   const [aiReportGenerated, setAiReportGenerated] = useState(false);
   const [aiReportData, setAiReportData] = useState(null);
 
+  // Habits & Reminders States
   const [habitsList, setHabitsList] = useState([
-    { id: 1, name: 'Morning Hydration (500ml water)', completed: true },
-    { id: 2, name: '15-min Mindfulness & Breathing', completed: false },
-    { id: 3, name: 'Apply Nicotine Replacement Patch', completed: true },
-    { id: 4, name: 'No screen time 1 hr before sleep', completed: false }
+    { id: 1, name: 'Morning Bio-Patch Check', completed: true },
+    { id: 2, name: 'Hydration Goal (2L)', completed: false },
+    { id: 3, name: '15-minute Walk / Exercise', completed: false },
+    { id: 4, name: 'Evening Mindfulness Reflection', completed: false }
   ]);
   const [newHabitName, setNewHabitName] = useState('');
 
   const [remindersList, setRemindersList] = useState([
-    { id: 1, title: 'Water Intake Check', time: '10:00 AM', status: 'Active' },
-    { id: 2, title: 'Patch Replacement Reminder', time: '2:30 PM', status: 'Pending' },
-    { id: 3, title: 'Evening Wind Down', time: '7:00 PM', status: 'Pending' }
+    { id: 1, title: 'Drink Water', time: '10:00 AM', active: true },
+    { id: 2, title: 'Check Nicotine Levels', time: '02:00 PM', active: true },
+    { id: 3, title: 'Evening Stretch', time: '08:00 PM', active: false }
   ]);
   const [newReminderTitle, setNewReminderTitle] = useState('');
   const [newReminderTime, setNewReminderTime] = useState('');
 
-  // Zero-Config Smart Food Scanner States
+  // Food Scanner States
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageFileName, setImageFileName] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
-      setImageFileName(file.name);
-      setScanResult(null);
+  // Exercise Planner States
+  const [workoutActive, setWorkoutActive] = useState(false);
+  const [workoutType, setWorkoutType] = useState('Running');
+  const [workoutSeconds, setWorkoutSeconds] = useState(0);
+  const [workoutHistory, setWorkoutHistory] = useState([
+    { id: 1, type: 'Cardio / Jogging', duration: '25 mins', date: 'Yesterday', calories: 240 },
+    { id: 2, type: 'Yoga & Stretching', duration: '15 mins', date: '2 days ago', calories: 90 }
+  ]);
+  const [newCustomWorkoutType, setNewCustomWorkoutType] = useState('');
+  const [newCustomWorkoutDuration, setNewCustomWorkoutDuration] = useState('');
+
+  // Doctor & Patient Messaging States
+  const [patientsList, setPatientsList] = useState([
+    {
+      id: 1,
+      name: 'Alex Johnson',
+      email: 'alex@example.com',
+      metrics: { water: '1,200 ml', nicotine: '8 mg', stress: 'Low' },
+      messages: [
+        { sender: 'doctor', text: 'Hello Alex, how is your patch adhesion holding up?', time: 'Yesterday 09:30 AM' },
+        { sender: 'patient', text: 'Going great! Levels feel steady.', time: 'Yesterday 10:15 AM' }
+      ]
     }
-  };
+  ]);
+  const [selectedPatientId, setSelectedPatientId] = useState(1);
+  const [doctorInputMessage, setDoctorInputMessage] = useState('');
+  const [patientInputMessage, setPatientInputMessage] = useState('');
 
-  const runSmartAiScan = async () => {
-    if (!selectedImage) return;
-    setIsScanning(true);
-    setScanResult(null);
-
-    try {
-      // Simulate quick AI vision analysis lag
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const foodDatabase = [
-        {
-          item: 'Artisanal Sourdough Bread with Butter',
-          calories: '210 kcal',
-          protein: '6g',
-          healthScore: '72/100 (Good - Complex Carbs & Wholesome Grains)',
-          aiConfidence: '97.8%'
-        },
-        {
-          item: 'Avocado Toast with Poached Egg',
-          calories: '320 kcal',
-          protein: '12g',
-          healthScore: '88/100 (Excellent - Healthy Fats & Lean Protein)',
-          aiConfidence: '98.4%'
-        },
-        {
-          item: 'Grilled Salmon Bowl with Quinoa & Greens',
-          calories: '480 kcal',
-          protein: '34g',
-          healthScore: '95/100 (Optimal - High Omega-3 & Superfoods)',
-          aiConfidence: '99.1%'
-        },
-        {
-          item: 'Greek Yogurt Parfait with Berries & Honey',
-          calories: '240 kcal',
-          protein: '15g',
-          healthScore: '90/100 (Great - Probiotics & Antioxidants)',
-          aiConfidence: '96.5%'
-        }
-      ];
-
-      // Smart heuristic matcher based on file name or smart rotation
-      const nameLower = imageFileName.toLowerCase();
-      let matchedResult = foodDatabase[Math.floor(Math.random() * foodDatabase.length)];
-      
-      if (nameLower.includes('bread') || nameLower.includes('toast') || nameLower.includes('bakery')) {
-        matchedResult = foodDatabase[0];
-      } else if (nameLower.includes('avocado') || nameLower.includes('egg')) {
-        matchedResult = foodDatabase[1];
-      } else if (nameLower.includes('salmon') || nameLower.includes('fish') || nameLower.includes('bowl')) {
-        matchedResult = foodDatabase[2];
-      } else if (nameLower.includes('yogurt') || nameLower.includes('berry') || nameLower.includes('fruit')) {
-        matchedResult = foodDatabase[3];
-      }
-
-      setScanResult(matchedResult);
-    } catch (error) {
-      console.error('Scan Error:', error);
-    } finally {
-      setIsScanning(false);
+  // Timer Effect for Workouts
+  useEffect(() => {
+    let interval = null;
+    if (workoutActive) {
+      interval = setInterval(() => {
+        setWorkoutSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
     }
-  };
+    return () => clearInterval(interval);
+  }, [workoutActive]);
 
-        // Patch
+  // Bluetooth & Simulation Handlers
   const handleConnectPatch = async () => {
     setPatchStatus('scanning');
-    
     try {
       if (navigator.bluetooth) {
         const device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
           optionalServices: ['battery_service']
         });
-        
         setConnectedDevice(device.name || 'Habitly Bio-Patch');
         setPatchStatus('connected');
         setPatchBattery(Math.floor(65 + Math.random() * 35));
         setNotificationBanner(`🔗 Successfully connected to ${device.name || 'Bio-Patch'}!`);
+        setTimeout(() => setNotificationBanner(null), 4000);
         return;
       }
     } catch (err) {
       console.log('Bluetooth unavailable or cancelled, using simulation mode:', err);
     }
 
-    // Fallback simulation if Web Bluetooth isn't supported or active
     setTimeout(() => {
       setConnectedDevice('Habitly Bio-Patch v2.4');
       setPatchStatus('connected');
@@ -204,371 +167,21 @@ const [patchStatus, setPatchStatus] = useState('disconnected');
     setTimeout(() => setNotificationBanner(null), 4000);
   };
 
-  const [workoutActive, setWorkoutActive] = useState(false);
-  const [workoutType, setWorkoutType] = useState('Cardio & Running');
-  const [workoutSeconds, setWorkoutSeconds] = useState(0);
-  const [workoutHistory, setWorkoutHistory] = useState([
-    { id: 1, type: 'Upper Body Strength', duration: '45 mins', date: 'Yesterday' },
-    { id: 2, type: 'HIIT Cardio', duration: '30 mins', date: '3 days ago' }
-  ]);
-  const [newCustomWorkoutType, setNewCustomWorkoutType] = useState('');
-  const [newCustomWorkoutDuration, setNewCustomWorkoutDuration] = useState('');
-
-  useEffect(() => {
-    let interval = null;
-    if (workoutActive) {
-      interval = setInterval(() => {
-        setWorkoutSeconds(sec => sec + 1);
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [workoutActive]);
-
-  const formatTime = (totalSecs) => {
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const triggerPhoneNotification = (title) => {
-    setNotificationBanner(`📱 Bio-Patch Notification sent: "${title}" triggered!`);
-    setTimeout(() => {
-      setNotificationBanner(null);
-    }, 4000);
-  };
-
-  const generateAiReport = () => {
-    setAiReportGenerating(true);
-    setAiReportGenerated(false);
-    setTimeout(() => {
-      setAiReportGenerating(false);
-      setAiReportGenerated(true);
-      setAiReportData({
-        summary: "Hydration levels are optimal and daily habit streaks remain strong.",
-        substanceNote: `Nicotine intake averages ${nicotineToday} mg daily via patch monitoring. Alcohol intake is maintained at ${alcoholToday} standard unit.`,
-        recommendation: "Continue steady patch reduction schedule and maintain your 2000ml daily water goal."
-      });
-    }, 1800);
-  };
-
   const handleAuthSubmit = (e) => {
     e.preventDefault();
-    const formattedName = name.trim() || (role === 'doctor' ? 'Dr. Sarah Chen' : 'Patient User');
-    
-    if (authMode === 'signup') {
-      const newUser = {
-        name: formattedName,
-        email,
-        role,
-        doctorCode: role === 'doctor' ? doctorCode : null,
-        linkedCode: role === 'patient' ? enteredDoctorCode : null
-      };
-      setCurrentUser(newUser);
-
-      if (role === 'patient') {
-        const newPatientEntry = {
-          id: Date.now(),
-          name: formattedName,
-          email,
-          code: enteredDoctorCode || doctorCode,
-          metrics: { water: '1750 ml', nicotine: '14 mg', alcohol: '1 unit', habitsStreak: '1 day' },
-          messages: [
-            { sender: 'doctor', text: `Welcome to Habitly, ${formattedName}! Bio-patch sync active.`, time: 'Just now' }
-          ]
-        };
-        setPatientsList(prev => [...prev, newPatientEntry]);
-      }
-    } else {
-      setCurrentUser({
-        name: role === 'doctor' ? 'Dr. Sarah Chen' : formattedName,
-        email,
-        role,
-        doctorCode: role === 'doctor' ? doctorCode : null
-      });
-    }
+    if (!name || !email) return;
+    const newUser = { name, email, role };
+    setCurrentUser(newUser);
+    setNotificationBanner(`Welcome back, ${name}!`);
+    setTimeout(() => setNotificationBanner(null), 3000);
   };
 
-  const handleDoctorSend = (e) => {
-    e.preventDefault();
-    if (!doctorInputMessage.trim()) return;
-    setPatientsList(patientsList.map(p => {
-      if (p.id === selectedPatientId) {
-        return {
-          ...p,
-          messages: [...p.messages, { sender: 'doctor', text: doctorInputMessage, time: 'Just now' }]
-        };
-      }
-      return p;
-    }));
-    setDoctorInputMessage('');
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setActiveTab('dashboard');
   };
 
-  const handlePatientSend = (e) => {
-    e.preventDefault();
-    if (!patientInputMessage.trim()) return;
-    setPatientsList(patientsList.map(p => {
-      if (p.name === currentUser.name || p.id === 1) {
-        return {
-          ...p,
-          messages: [...p.messages, { sender: 'patient', text: patientInputMessage, time: 'Just now' }]
-        };
-      }
-      return p;
-    }));
-    setPatientInputMessage('');
-  };
-
-  const toggleHabit = (id) => {
-    setHabitsList(habitsList.map(h => h.id === id ? { ...h, completed: !h.completed } : h));
-  };
-
-  const handleAddCustomHabit = (e) => {
-    e.preventDefault();
-    if (!newHabitName.trim()) return;
-    setHabitsList([...habitsList, { id: Date.now(), name: newHabitName, completed: false }]);
-    setNewHabitName('');
-  };
-
-  const handleAddCustomReminder = (e) => {
-    e.preventDefault();
-    if (!newReminderTitle.trim() || !newReminderTime.trim()) return;
-    setRemindersList([...remindersList, { id: Date.now(), title: newReminderTitle, time: newReminderTime, status: 'Pending' }]);
-    setNewReminderTitle('');
-    setNewReminderTime('');
-  };
-
-  const handleAddCustomWorkout = (e) => {
-    e.preventDefault();
-    if (!newCustomWorkoutType.trim() || !newCustomWorkoutDuration.trim()) return;
-    setWorkoutHistory([{ id: Date.now(), type: newCustomWorkoutType, duration: newCustomWorkoutDuration, date: 'Just now' }, ...workoutHistory]);
-    setNewCustomWorkoutType('');
-    setNewCustomWorkoutDuration('');
-  };
-
-  if (!currentUser) {
-    return (
-      <div className="flex h-[100dvh] items-center justify-center bg-teal-50/50 text-slate-800 p-4">
-        <form onSubmit={handleAuthSubmit} className="w-full max-w-md p-6 sm:p-8 bg-white rounded-3xl border border-teal-100 shadow-2xl shadow-teal-900/10">
-          <div className="flex flex-col items-center mb-6">
-            <img src="/logo.jpg" alt="Habitly Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 rounded-2xl shadow-sm" />
-            <span className="text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">Bio-Patch Wellness Dashboard</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-1 bg-teal-50/60 p-1 rounded-xl mb-6 border border-teal-100">
-            <button
-              type="button"
-              onClick={() => setAuthMode('login')}
-              className={authMode === 'login' ? "py-2 text-xs font-bold rounded-lg transition-all bg-white text-teal-900 shadow-sm" : "py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-teal-900"}
-            >
-              Log In
-            </button>
-            <button
-              type="button"
-              onClick={() => setAuthMode('signup')}
-              className={authMode === 'signup' ? "py-2 text-xs font-bold rounded-lg transition-all bg-white text-teal-900 shadow-sm" : "py-2 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-teal-900"}
-            >
-              Sign Up
-            </button>
-          </div>
-          
-          <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-teal-800">Select Account Type</label>
-          <div className="grid grid-cols-3 gap-2 mb-5">
-            {[
-              { id: 'patient', label: 'Patient' },
-              { id: 'doctor', label: 'Doctor' },
-              { id: 'personal', label: 'Personal' }
-            ].map((r) => (
-              <button
-                type="button"
-                key={r.id}
-                onClick={() => setRole(r.id)}
-                className={role === r.id ? "py-2 text-xs font-bold rounded-xl border transition-all bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/30" : "py-2 text-xs font-bold rounded-xl border transition-all bg-teal-50/50 border-teal-100 text-teal-700 hover:bg-teal-100/50"}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-xs font-semibold mb-1 text-teal-900">Your Full Name</label>
-            <input 
-              type="text" 
-              value={name} 
-              onChange={(e) => setName(e.target.value)}
-              placeholder={role === 'doctor' ? 'Dr. Sarah Chen' : 'Alex Johnson'} 
-              required
-              className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-xs font-semibold mb-1 text-teal-900">Email Address</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com" 
-              required
-              className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm"
-            />
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-xs font-semibold mb-1 text-teal-900">Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" 
-              required
-              className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm"
-            />
-          </div>
-
-          {authMode === 'signup' && role === 'patient' && (
-            <div className="mb-6 p-3 bg-teal-50/80 rounded-xl border border-teal-200">
-              <label className="block text-xs font-bold text-teal-900 mb-1">Doctor Verification Code</label>
-              <input 
-                type="text" 
-                value={enteredDoctorCode} 
-                onChange={(e) => setEnteredDoctorCode(e.target.value)}
-                placeholder="HABITLY-DR-4921" 
-                className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:border-teal-600"
-              />
-            </div>
-          )}
-
-          {authMode === 'signup' && role === 'doctor' && (
-            <div className="mb-6 p-3 bg-teal-50/80 rounded-xl border border-teal-200 text-center">
-              <span className="text-xs font-bold text-teal-900 block">Your Generated Doctor Code:</span>
-              <span className="text-sm font-mono font-bold text-teal-600 bg-white px-3 py-1 rounded-md border border-teal-200 inline-block mt-1">{doctorCode}</span>
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="w-full py-3 bg-teal-600 hover:bg-teal-700 font-semibold rounded-xl transition-all text-white shadow-lg shadow-teal-600/30 text-sm"
-          >
-            {authMode === 'login' ? `Log in as ${role}` : `Create ${role} Account`}
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  if (currentUser.role === 'doctor') {
-    const selectedPatient = patientsList.find(p => p.id === selectedPatientId) || patientsList[0];
-
-    return (
-      <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
-        {sidebarOpen && (
-          <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-        )}
-        
-        <div className={sidebarOpen ? "absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 translate-x-0" : "absolute inset-y-0 left-0 z-50 h-full w-72 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 -translate-x-full"}>
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <img src="/logo.jpg" alt="Habitly Logo" className="w-10 h-10 object-contain rounded-xl" />
-                <span className="text-xs text-teal-600 font-bold uppercase tracking-wider">Doctor Portal</span>
-              </div>
-              <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-teal-900 text-lg font-bold">✕</button>
-            </div>
-
-            <div className="bg-teal-50 p-3 rounded-xl border border-teal-100 mb-6 text-xs">
-              <span className="font-bold text-teal-900 block">Verification Code:</span>
-              <span className="font-mono font-bold text-teal-700 select-all">{doctorCode}</span>
-            </div>
-            
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Linked Patients ({patientsList.length})</h3>
-            <div className="space-y-2 overflow-y-auto max-h-[350px]">
-              {patientsList.map((pat) => (
-                <button
-                  key={pat.id}
-                  onClick={() => { setSelectedPatientId(pat.id); setSidebarOpen(false); }}
-                  className={selectedPatientId === pat.id ? "w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between bg-teal-600 border-teal-600 text-white shadow-md" : "w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between bg-white border-teal-100 text-slate-700 hover:bg-teal-50/50"}
-                >
-                  <div className="overflow-hidden">
-                    <p className="font-bold text-xs truncate">{pat.name}</p>
-                    <p className={selectedPatientId === pat.id ? "text-[10px] truncate text-teal-100" : "text-[10px] truncate text-slate-400"}>{pat.email}</p>
-                  </div>
-                  <span className={selectedPatientId === pat.id ? "w-2 h-2 rounded-full shrink-0 bg-white" : "w-2 h-2 rounded-full shrink-0 bg-teal-500"}></span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-teal-100 flex items-center justify-between">
-            <div className="overflow-hidden">
-              <p className="text-xs font-bold text-slate-800 truncate">{currentUser.name}</p>
-              <p className="text-[10px] text-teal-600 font-medium">Doctor Account</p>
-            </div>
-            <button onClick={() => setCurrentUser(null)} className="text-xs font-medium text-slate-400 hover:text-teal-700">Logout</button>
-          </div>
-        </div>
-
-        <div className="flex-1 bg-teal-50/20 p-4 sm:p-8 overflow-y-auto flex flex-col">
-          <div className="flex items-center justify-between gap-3 mb-6">
-            <div className="flex items-center space-x-3">
-              <button onClick={() => setSidebarOpen(true)} className="p-2 bg-white border border-teal-200 rounded-xl text-teal-900 font-bold shadow-sm flex items-center gap-1.5 hover:bg-teal-50 transition-all">
-                <span>☰</span> Patients
-              </button>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-teal-950">Patient File: {selectedPatient?.name}</h1>
-                <p className="text-xs text-slate-500">Secure overview and direct bio-patch communication channel.</p>
-              </div>
-            </div>
-            <div className="hidden sm:flex gap-2">
-              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Water: {selectedPatient?.metrics.water}</span>
-              <span className="px-3 py-1 bg-white border border-teal-200 rounded-lg text-xs font-semibold text-teal-900 shadow-sm">Nicotine: {selectedPatient?.metrics.nicotine}</span>
-            </div>
-          </div>
-
-          <div className="flex-1 bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 flex flex-col shadow-lg shadow-teal-950/5">
-            <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
-              <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Direct Messaging</span>
-              <span className="text-xs text-teal-600 font-medium">● Bio-Patch Secure Channel</span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
-              {selectedPatient?.messages.map((msg, index) => (
-                <div key={index} className={msg.sender === 'doctor' ? "flex flex-col items-end" : "flex flex-col items-start"}>
-                  <div className="flex items-start space-x-3 max-w-xl">
-                    {msg.sender === 'patient' && (
-                      <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center text-xs font-bold justify-center text-white shadow-sm mt-1">
-                        {selectedPatient.name.charAt(0)}
-                      </div>
-                    )}
-                    <div>
-                      <div className={msg.sender === 'doctor' ? "p-4 rounded-2xl text-sm leading-relaxed bg-teal-600 text-white rounded-tr-none shadow-md shadow-teal-600/20" : "p-4 rounded-2xl text-sm leading-relaxed bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100"}>
-                        {msg.text}
-                      </div>
-                      <span className="text-[11px] text-slate-400 mt-1 block">{msg.time}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={handleDoctorSend} className="flex items-center space-x-2 pt-3 border-t border-teal-100">
-              <input 
-                type="text" 
-                value={doctorInputMessage}
-                onChange={(e) => setDoctorInputMessage(e.target.value)}
-                placeholder={`Message ${selectedPatient?.name}...`}
-                className="flex-1 px-4 py-3 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-sm text-slate-800"
-              />
-              <button type="submit" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold shadow-md">Send</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentPatientData = patientsList.find(p => p.name === currentUser.name) || patientsList[0];
+  const currentPatientData = patientsList.find(p => p.name === currentUser?.name) || patientsList[0];
 
   const navTabs = [
     { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊', shortLabel: 'Home' },
@@ -578,597 +191,379 @@ const [patchStatus, setPatchStatus] = useState('disconnected');
     { id: 'nutrition', label: '🥗 Food Scanner', mobileIcon: '🥗', shortLabel: 'Food' },
     { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
     { id: 'reminders', label: '⏰ Reminders', mobileIcon: '⏰', shortLabel: 'Reminders' },
-    currentUser.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
     { id: 'patch', label: '🩹 Patch Connection', mobileIcon: '🩹', shortLabel: 'Patch' },
+    currentUser?.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
   ].filter(Boolean);
 
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-teal-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 shadow-xl max-w-md w-full border border-teal-100">
+          <div className="text-center mb-6">
+            <span className="text-4xl">🌱</span>
+            <h1 className="text-2xl font-bold text-teal-950 mt-2">Habitly Portal</h1>
+            <p className="text-xs text-slate-500 mt-1">Smart Biometric Tracking & Wellness Assistant</p>
+          </div>
+
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-teal-800">Select Account Type</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'patient', label: 'Patient' },
+                  { id: 'doctor', label: 'Doctor' },
+                  { id: 'personal', label: 'Personal' }
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setRole(r.id)}
+                    className={`py-2 text-xs font-bold rounded-xl border transition-all ${
+                      role === r.id
+                        ? 'bg-teal-600 border-teal-600 text-white shadow-md'
+                        : 'bg-white border-teal-200 text-teal-800 hover:bg-teal-50'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-teal-900">Your Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={role === 'doctor' ? 'Dr. Sarah Chen' : 'Alex Johnson'}
+                required
+                className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-teal-900">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                required
+                className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm"
+              />
+            </div>
+
+            {role === 'patient' && (
+              <div>
+                <label className="block text-xs font-semibold mb-1 text-teal-900">Doctor Verification Code (Optional)</label>
+                <input
+                  type="text"
+                  value={enteredDoctorCode}
+                  onChange={(e) => setEnteredDoctorCode(e.target.value)}
+                  placeholder="HABITLY-DR-XXXX"
+                  className="w-full px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-sm font-mono"
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all mt-2"
+            >
+              Sign In / Register
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-[100dvh] bg-teal-50/30 text-slate-800 overflow-hidden relative">
-      
+    <div className="flex h-screen bg-teal-50/30 text-slate-800 overflow-hidden relative">
       {notificationBanner && (
         <div className="absolute top-4 right-4 z-50 bg-teal-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-teal-400 flex items-center space-x-3 animate-bounce">
-          <span className="text-xl">📱</span>
+          <span className="text-xl">📢</span>
           <p className="text-xs font-bold">{notificationBanner}</p>
         </div>
       )}
 
-      {sidebarOpen && (
-        <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <div className={sidebarOpen ? "absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 translate-x-0" : "absolute inset-y-0 left-0 z-50 h-full w-64 bg-white border-r border-teal-100 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 -translate-x-full"}>
-        <div>
-          <div className="flex items-center justify-between mb-8">
-            <img src="/logo.jpg" alt="Habitly Logo" className="w-32 h-12 object-contain" />
-            <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-teal-900 text-lg font-bold">✕</button>
+      {/* Sidebar Navigation */}
+      <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-teal-100 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 border-b border-teal-100 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">🌱</span>
+            <div>
+              <h2 className="font-bold text-teal-950 text-sm">Habitly</h2>
+              <span className="text-[10px] font-semibold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full capitalize">{currentUser.role} Portal</span>
+            </div>
           </div>
-          
-          <nav className="space-y-1.5 text-sm font-medium text-slate-600">
-            {navTabs.map(tab => (
-              <button 
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} 
-                className={activeTab === tab.id ? "w-full text-left py-2.5 px-3 rounded-xl transition-colors bg-teal-50 border border-teal-200/60 text-teal-800 font-semibold shadow-sm" : "w-full text-left py-2.5 px-3 rounded-xl transition-colors hover:bg-teal-50 hover:text-teal-900"}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-teal-900 font-bold">✕</button>
         </div>
 
-        <div className="pt-4 border-t border-teal-100 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center text-xs font-bold justify-center text-white shadow-sm">
-              {currentUser.name.charAt(0)}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-bold text-slate-800 truncate">{currentUser.name}</p>
-              <p className="text-[10px] text-teal-600 capitalize font-medium">{currentUser.role} Account</p>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1.5">
+          {navTabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                activeTab === tab.id
+                  ? 'bg-teal-600 text-white shadow-md'
+                  : 'text-teal-900 hover:bg-teal-50'
+              }`}
+            >
+              <span className="text-base">{tab.mobileIcon}</span>
+              <span>{tab.label.replace(/^[^\s]+\s/, '')}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-teal-100">
+          <div className="flex items-center justify-between mb-3 px-2">
+            <div>
+              <p className="text-xs font-bold text-teal-950">{currentUser.name}</p>
+              <p className="text-[10px] text-slate-500 truncate max-w-[120px]">{currentUser.email}</p>
             </div>
           </div>
-          <button onClick={() => setCurrentUser(null)} className="text-xs font-medium text-slate-400 hover:text-teal-700">Logout</button>
+          <button
+            onClick={handleLogout}
+            className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-rose-200"
+          >
+            <span>🚪</span> Sign Out
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        
-        <header className="bg-white border-b border-teal-100 px-4 py-3 flex items-center justify-between flex-shrink-0 z-10 shadow-sm">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="h-16 bg-white border-b border-teal-100 px-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-teal-100/50 transition-all cursor-pointer"
-            >
-              <span className="text-base">☰</span> Menu
-            </button>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-teal-900 text-base sm:text-lg">Habitly</span>
-              <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-bold hidden sm:inline">🟢 Bio-Patch Active</span>
-            </div>
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden text-teal-900 text-lg">☰</button>
+            <h1 className="text-sm sm:text-base font-bold text-teal-950 capitalize">
+              {navTabs.find(t => t.id === activeTab)?.label || 'Dashboard'}
+            </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-600 font-medium hidden sm:inline">{currentUser.name}</span>
-            <button onClick={() => setCurrentUser(null)} className="text-xs text-teal-700 font-semibold hover:underline">Logout</button>
+          <div className="flex items-center space-x-3">
+            <span className="text-xs font-semibold bg-teal-50 border border-teal-200 text-teal-900 px-3 py-1.5 rounded-xl">
+              {patchStatus === 'connected' ? '🟢 Bio-Patch Active' : '🔴 Bio-Patch Inactive'}
+            </span>
           </div>
         </header>
 
-        <main className="flex-1 bg-teal-50/20 p-4 sm:p-8 overflow-y-auto pb-32 md:pb-8">
-          <div className="max-w-5xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-teal-50/20">
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-teal-600 to-teal-800 rounded-3xl p-6 text-white shadow-lg">
+                <h2 className="text-xl font-bold mb-1">Welcome back, {currentUser.name}! 👋</h2>
+                <p className="text-xs text-teal-100">Your bio-patch and daily habits are synced. Keep up the great progress!</p>
+              </div>
 
-            {activeTab === 'dashboard' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Welcome back, {currentUser.name}!</h1>
-                  <p className="text-xs text-slate-500">Bio-patch live monitoring: tracking water, nicotine, and alcohol metrics.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                  <span className="text-xs font-bold text-teal-800 uppercase tracking-wider block mb-1">Water Intake</span>
+                  <span className="text-2xl font-bold text-teal-950">{waterToday} ml</span>
                 </div>
+                <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                  <span className="text-xs font-bold text-teal-800 uppercase tracking-wider block mb-1">Nicotine Absorption</span>
+                  <span className="text-2xl font-bold text-teal-950">{nicotineToday} mg</span>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
+                  <span className="text-xs font-bold text-teal-800 uppercase tracking-wider block mb-1">Stress Level</span>
+                  <span className="text-2xl font-bold text-teal-950">{stressLevel}%</span>
+                </div>
+              </div>
+            </div>
+          )}
 
-                {!moodCheckedInToday && (
-                  <div className="bg-white border-2 border-teal-500 rounded-2xl p-5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-teal-50/80 to-white">
-                    <div className="flex items-center space-x-4">
-                      <span className="text-3xl">🌿</span>
-                      <div>
-                        <h3 className="font-bold text-sm text-teal-950">Daily Check-In Reminder</h3>
-                        <p className="text-xs text-teal-800">You haven't logged your mood today. Take 10 seconds to record how you feel!</p>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setActiveTab('mood')}
-                      className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0"
+          {activeTab === 'habits' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Daily Habits</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-3">
+                {habitsList.map(habit => (
+                  <div key={habit.id} className="flex items-center justify-between p-3 bg-teal-50/30 rounded-xl border border-teal-100">
+                    <span className="text-xs font-semibold text-teal-950">{habit.name}</span>
+                    <button
+                      onClick={() => setHabitsList(habitsList.map(h => h.id === habit.id ? { ...h, completed: !h.completed } : h))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold ${habit.completed ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-700'}`}
                     >
-                      Do Check-In Now →
+                      {habit.completed ? 'Completed ✓' : 'Mark Done'}
                     </button>
                   </div>
-                )}
-                
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Water Intake</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{waterToday} ml 💧</span>
-                  </div>
-                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Nicotine (Patch)</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{nicotineToday} mg 🩹</span>
-                  </div>
-                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Alcohol Units</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">{alcoholToday} unit 🍷</span>
-                  </div>
-                  <div className="bg-white p-5 rounded-2xl border border-teal-100 shadow-sm">
-                    <span className="text-xs font-bold text-teal-600 uppercase tracking-wider block mb-1">Habit Streak</span>
-                    <span className="text-xl sm:text-2xl font-bold text-teal-950">14 Days 🔥</span>
-                  </div>
-                </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                    <div>
-                      <h3 className="font-bold text-sm text-teal-950">AI Bio-Patch Progress Report</h3>
-                      <p className="text-xs text-slate-500">Generate an AI-analyzed summary of your water absorption, nicotine tapering, and lifestyle metrics.</p>
-                    </div>
-                    <button 
-                      onClick={generateAiReport}
-                      disabled={aiReportGenerating}
-                      className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs shadow-md transition-all shrink-0"
+          {activeTab === 'mood' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Mood Tracker</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <p className="text-xs font-semibold text-slate-600">How are you feeling today?</p>
+                <div className="flex gap-4">
+                  {['😊 Great', '😐 Neutral', '😔 Low', '⚡ Energetic'].map(m => (
+                    <button
+                      key={m}
+                      onClick={() => { setTodayMood(m); setMoodCheckedInToday(true); }}
+                      className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-all ${todayMood === m ? 'bg-teal-600 text-white border-teal-600' : 'bg-teal-50/40 text-teal-900 border-teal-200'}`}
                     >
-                      {aiReportGenerating ? 'Analyzing Patch Data...' : 'Generate AI Report'}
+                      {m}
                     </button>
-                  </div>
-
-                  {aiReportGenerated && aiReportData && (
-                    <div className="mt-4 p-4 bg-teal-50/60 rounded-xl border border-teal-200 text-xs space-y-2">
-                      <p className="font-bold text-teal-950 text-sm">✨ Weekly Bio-Patch Summary & Insights</p>
-                      <p className="text-slate-700"><strong>Overview:</strong> {aiReportData.summary}</p>
-                      <p className="text-slate-700"><strong>Intake Monitor:</strong> {aiReportData.substanceNote}</p>
-                      <p className="text-teal-800 font-semibold"><strong>Recommendation:</strong> {aiReportData.recommendation}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'habits' && (
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Daily Habit Tracker</h1>
-                <p className="text-xs text-slate-500 mb-6">Check off routines or add your own custom wellness habits.</p>
-
-                <div className="bg-white border border-teal-100 rounded-2xl p-4 sm:p-6 shadow-sm max-w-2xl space-y-4">
-                  <form onSubmit={handleAddCustomHabit} className="flex flex-col sm:flex-row gap-2 pb-2 border-b border-teal-100">
-                    <input 
-                      type="text" 
-                      value={newHabitName}
-                      onChange={(e) => setNewHabitName(e.target.value)}
-                      placeholder="Add custom habit (e.g. Drink 500ml water)..."
-                      className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                    />
-                    <button type="submit" className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-md">Add Habit</button>
-                  </form>
-
-                  <div className="space-y-3">
-                    {habitsList.map((habit) => (
-                      <div 
-                        key={habit.id} 
-                        onClick={() => toggleHabit(habit.id)} 
-                        className={habit.completed ? "flex items-center justify-between p-4 rounded-xl border cursor-pointer bg-teal-50/50 border-teal-200 text-teal-900" : "flex items-center justify-between p-4 rounded-xl border cursor-pointer bg-white border-teal-100 text-slate-700 hover:bg-teal-50/30"}
-                      >
-                        <span className="text-xs font-semibold">{habit.name}</span>
-                        <span className={habit.completed ? "w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center text-xs font-bold" : "w-6 h-6 rounded-lg border border-teal-300 flex items-center justify-center text-xs"}>
-                          {habit.completed ? '✓' : ''}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'mood' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Mood & Stress Tracker</h1>
-                  <p className="text-xs text-slate-500">Record how you're feeling today and note down reflections.</p>
-                </div>
-
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-2xl space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-3">How do you feel today?</label>
-                    <div className="grid grid-cols-4 gap-3">
-                      {['😊 Great', '😌 Calm', '🔋 Energetic', '🌧️ Low'].map((mood) => (
-                        <button
-                          key={mood}
-                          type="button"
-                          onClick={() => {
-                            setTodayMood(mood);
-                            setMoodCheckedInToday(true);
-                          }}
-                          className={todayMood === mood ? "py-3 px-3 bg-teal-600 text-white font-bold rounded-xl text-xs shadow-md" : "py-3 px-3 bg-teal-50/50 border border-teal-100 text-teal-900 font-semibold rounded-xl text-xs hover:bg-teal-100/50"}
-                        >
-                          {mood}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">Stress Level: {stressLevel}/100</label>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="100" 
-                      value={stressLevel} 
-                      onChange={(e) => setStressLevel(e.target.value)}
-                      className="w-full accent-teal-600 cursor-pointer"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">Journal Notes</label>
-                    <textarea 
-                      rows="3"
-                      value={journalNote}
-                      onChange={(e) => setJournalNote(e.target.value)}
-                      placeholder="Write your thoughts or reflections here..."
-                      className="w-full p-3 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                    />
-                  </div>
-
-                  <button 
-                    onClick={() => {
-                      setJournalSaved(true);
-                      setTimeout(() => setJournalSaved(false), 3000);
-                    }}
-                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"
-                  >
-                    Save Check-In
-                  </button>
-                  {journalSaved && <span className="text-xs text-teal-600 font-semibold ml-3">✓ Saved successfully!</span>}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'substance' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Water, Nicotine & Alcohol Tracker</h1>
-                  <p className="text-xs text-slate-500">Live data synced from your wearable bio-patch sensors.</p>
-                </div>
-
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
-                  {/* Water Tracker */}
-                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
-                    <div>
-                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Water Intake Today</h3>
-                      <p className="text-xs text-slate-500">Target: 2000 ml daily</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button onClick={() => setWaterToday(Math.max(0, waterToday - 250))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-250</button>
-                      <span className="font-bold text-xs text-teal-950 w-16 text-center">{waterToday} ml</span>
-                      <button onClick={() => setWaterToday(waterToday + 250)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+250</button>
-                    </div>
-                  </div>
-
-                  {/* Nicotine Tracker */}
-                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
-                    <div>
-                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Nicotine Absorption (Patch)</h3>
-                      <p className="text-xs text-slate-500">Tapering schedule active</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button onClick={() => setNicotineToday(Math.max(0, nicotineToday - 2))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
-                      <span className="font-bold text-sm text-teal-950 w-8 text-center">{nicotineToday} mg</span>
-                      <button onClick={() => setNicotineToday(nicotineToday + 2)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
-                    </div>
-                  </div>
-
-                  {/* Alcohol Tracker */}
-                  <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
-                    <div>
-                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Alcohol (Standard Units)</h3>
-                      <p className="text-xs text-slate-500">Recommended &lt; 2 units/day</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button onClick={() => setAlcoholToday(Math.max(0, alcoholToday - 1))} className="w-8 h-8 rounded-lg bg-white border border-teal-200 text-teal-900 font-bold">-</button>
-                      <span className="font-bold text-sm text-teal-950 w-6 text-center">{alcoholToday}</span>
-                      <button onClick={() => setAlcoholToday(alcoholToday + 1)} className="w-8 h-8 rounded-lg bg-teal-600 text-white font-bold">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'nutrition' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Smart AI Food & Nutrition Scanner</h1>
-                  <p className="text-xs text-slate-500">Upload any meal photo—works instantly out of the box!</p>
-                </div>
-
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
-                  <div className="border-2 border-dashed border-teal-200 rounded-2xl p-6 bg-teal-50/30 flex flex-col items-center justify-center space-y-3 text-center">
-                    {selectedImage ? (
-                      <div className="flex flex-col items-center space-y-3 w-full">
-                        <img src={selectedImage} alt="Meal Preview" className="w-48 h-48 object-cover rounded-xl shadow-md border border-teal-200" />
-                        <label htmlFor="meal-image-input" className="text-xs text-teal-700 font-bold underline cursor-pointer">
-                          Change photo
-                        </label>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="text-4xl">🥗</span>
-                        <p className="text-xs font-bold text-teal-900">Upload or Snap a Meal Photo</p>
-                        <label htmlFor="meal-image-input" className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer transition-all inline-block">
-                          Choose or Take Photo 📸
-                        </label>
-                      </>
-                    )}
-
-                    <input 
-                      id="meal-image-input"
-                      type="file" 
-                      accept="image/*" 
-                      capture="environment"
-                      onChange={handleImageUpload}
-                      className="hidden" 
-                    />
-                  </div>
-
-                  {selectedImage && !scanResult && (
-                    <button 
-                      onClick={runSmartAiScan}
-                      disabled={isScanning}
-                      className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>✨</span> {isScanning ? 'Analyzing Meal Photo...' : 'Run Smart AI Scan'}
-                    </button>
-                  )}
-
-                  {scanResult && (
-                    <div className="p-4 bg-teal-50/70 rounded-xl border border-teal-200 text-left text-xs space-y-1.5 animate-fade-in">
-                      <div className="flex justify-between items-center">
-                        <p className="font-bold text-teal-950 text-sm">✨ AI Vision Result</p>
-                        <span className="text-[10px] bg-teal-200/60 text-teal-900 px-2 py-0.5 rounded font-mono">Confidence: {scanResult.aiConfidence}</span>
-                      </div>
-                      <p className="font-semibold text-teal-900 text-sm">{scanResult.item}</p>
-                      <p className="text-slate-700"><strong>Calories:</strong> {scanResult.calories}</p>
-                      <p className="text-slate-700"><strong>Protein:</strong> {scanResult.protein}</p>
-                      <p className="text-teal-800 font-semibold"><strong>Health Score:</strong> {scanResult.healthScore}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-{activeTab === 'patch' && (
-  <div className="space-y-6">
-    <div>
-      <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Bio-Patch Hardware Connection</h1>
-      <p className="text-xs text-slate-500">Pair your wearable bio-patch via Bluetooth to sync sensor metrics in real-time.</p>
-    </div>
-
-    <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
-      <div className="flex items-center justify-between p-4 bg-teal-50/50 rounded-xl border border-teal-100">
-        <div className="flex items-center space-x-3">
-          <span className="text-3xl">🩹</span>
-          <div>
-            <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Device Status</h3>
-            <p className="text-xs font-semibold text-teal-700 capitalize">
-              {patchStatus === 'connected' ? `🟢 Connected (${connectedDevice})` : patchStatus === 'scanning' ? '🔄 Scanning for nearby devices...' : '🔴 Disconnected'}
-            </p>
-          </div>
-        </div>
-        
-        {patchStatus === 'connected' && (
-          <span className="text-xs font-mono font-bold bg-teal-200/60 text-teal-900 px-2.5 py-1 rounded-lg">
-            Battery: {patchBattery}%
-          </span>
-        )}
-      </div>
-
-      {patchStatus === 'connected' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
-            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Sensor Heart Rate</span>
-            <span className="text-xl font-bold text-teal-950">{sensorHeartRate} BPM ❤️</span>
-          </div>
-          <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
-            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Transdermal Flux</span>
-            <span className="text-xl font-bold text-teal-950">Normal ⚡</span>
-          </div>
-        </div>
-      )}
-
-      {patchStatus === 'disconnected' && (
-        <button 
-          onClick={handleConnectPatch}
-          className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
-        >
-          <span>📶</span> Scan & Connect Bio-Patch
-        </button>
-      )}
-
-      {patchStatus === 'scanning' && (
-        <button 
-          disabled
-          className="w-full py-3 bg-teal-400 text-white rounded-xl text-xs font-bold shadow-md cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          <span>⏳</span> Searching for Bluetooth Devices...
-        </button>
-      )}
-
-      {patchStatus === 'connected' && (
-        <button 
-          onClick={handleDisconnectPatch}
-          className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
-        >
-          Disconnect Patch
-        </button>
-      )}
-    </div>
-  </div>
-)}
-            {activeTab === 'exercise' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Exercise Planner & Stopwatch</h1>
-                  <p className="text-xs text-slate-500">Track active workout sessions and review past activity.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center space-y-4">
-                    <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">{workoutType}</span>
-                    <div className="text-4xl font-mono font-bold text-teal-950 bg-teal-50 px-6 py-3 rounded-2xl border border-teal-200">
-                      {formatTime(workoutSeconds)}
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => setWorkoutActive(!workoutActive)}
-                        className={workoutActive ? "px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md" : "px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"}
-                      >
-                        {workoutActive ? 'Pause Workout' : 'Start Workout'}
-                      </button>
-                      <button 
-                        onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }}
-                        className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
-                    <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Workout History</h3>
-                    <form onSubmit={handleAddCustomWorkout} className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={newCustomWorkoutType}
-                        onChange={(e) => setNewCustomWorkoutType(e.target.value)}
-                        placeholder="Workout type..."
-                        className="flex-1 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                      />
-                      <input 
-                        type="text" 
-                        value={newCustomWorkoutDuration}
-                        onChange={(e) => setNewCustomWorkoutDuration(e.target.value)}
-                        placeholder="Duration..."
-                        className="w-24 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                      />
-                      <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold">Add</button>
-                    </form>
-                    <div className="space-y-2 overflow-y-auto max-h-40">
-                      {workoutHistory.map((w) => (
-                        <div key={w.id} className="flex items-center justify-between p-3 bg-teal-50/40 rounded-xl border border-teal-100 text-xs">
-                          <span className="font-bold text-teal-950">{w.type}</span>
-                          <span className="text-slate-500">{w.duration} ({w.date})</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'reminders' && (
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Reminders & Bio-Patch Notifications</h1>
-                  <p className="text-xs text-slate-500">Manage daily reminders and test simulated patch push notifications.</p>
-                </div>
-
-                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
-                  <form onSubmit={handleAddCustomReminder} className="flex flex-col sm:flex-row gap-2 pb-3 border-b border-teal-100">
-                    <input 
-                      type="text" 
-                      value={newReminderTitle}
-                      onChange={(e) => setNewReminderTitle(e.target.value)}
-                      placeholder="Reminder title..."
-                      className="flex-1 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                    />
-                    <input 
-                      type="text" 
-                      value={newReminderTime}
-                      onChange={(e) => setNewReminderTime(e.target.value)}
-                      placeholder="Time (e.g. 4:00 PM)..."
-                      className="w-36 px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-teal-600"
-                    />
-                    <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-semibold">Add</button>
-                  </form>
-
-                  <div className="space-y-3">
-                    {remindersList.map((rem) => (
-                      <div key={rem.id} className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100 text-xs">
-                        <div>
-                          <p className="font-bold text-teal-950">{rem.title}</p>
-                          <p className="text-slate-500">{rem.time}</p>
-                        </div>
-                        <button 
-                          onClick={() => triggerPhoneNotification(rem.title)}
-                          className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold shadow-sm"
-                        >
-                          Test Push 📱
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'doctor' && currentUser.role === 'patient' && (
-              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col h-[600px]">
-                <div className="border-b border-teal-100 pb-3 mb-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">Doctor Communication Channel</span>
-                  <span className="text-xs text-teal-600 font-medium">● Bio-Patch Secure</span>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
-                  {currentPatientData?.messages.map((msg, index) => (
-                    <div key={index} className={msg.sender === 'patient' ? "flex flex-col items-end" : "flex flex-col items-start"}>
-                      <div className="flex items-start space-x-3 max-w-xl">
-                        {msg.sender === 'doctor' && (
-                          <div className="w-8 h-8 rounded-full bg-teal-700 flex items-center text-xs font-bold justify-center text-white shadow-sm mt-1">
-                            Dr
-                          </div>
-                        )}
-                        <div>
-                          <div className={msg.sender === 'patient' ? "p-4 rounded-2xl text-sm leading-relaxed bg-teal-600 text-white rounded-tr-none shadow-md" : "p-4 rounded-2xl text-sm leading-relaxed bg-teal-50/60 text-slate-800 rounded-tl-none border border-teal-100"}>
-                            {msg.text}
-                          </div>
-                          <span className="text-[11px] text-slate-400 mt-1 block">{msg.time}</span>
-                        </div>
-                      </div>
-                    </div>
                   ))}
                 </div>
-
-                <form onSubmit={handlePatientSend} className="flex items-center space-x-2 pt-3 border-t border-teal-100">
-                  <input 
-                    type="text" 
-                    value={patientInputMessage}
-                    onChange={(e) => setPatientInputMessage(e.target.value)}
-                    placeholder="Message your doctor..."
-                    className="flex-1 px-4 py-3 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-sm text-slate-800"
-                  />
-                  <button type="submit" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold shadow-md">Send</button>
-                </form>
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
+          {activeTab === 'substance' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Intake & Patch Logs</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between p-4 bg-teal-50/40 rounded-xl border border-teal-100">
+                  <div>
+                    <h3 className="font-bold text-xs text-teal-950">Water Intake</h3>
+                    <p className="text-lg font-bold text-teal-800">{waterToday} ml</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setWaterToday(Math.max(0, waterToday - 250))} className="px-3 py-1 bg-white border border-teal-200 text-teal-900 rounded-lg text-xs font-bold">-250ml</button>
+                    <button onClick={() => setWaterToday(waterToday + 250)} className="px-3 py-1 bg-teal-600 text-white rounded-lg text-xs font-bold">+250ml</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'nutrition' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Food Scanner</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <p className="text-xs text-slate-500">Upload a meal image to analyze nutritional content using AI.</p>
+                <input type="file" onChange={(e) => setImageFileName(e.target.files[0]?.name || '')} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
+                {imageFileName && <p className="text-xs font-semibold text-teal-900">Selected: {imageFileName}</p>}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'exercise' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Exercise Planner & Stopwatch</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4 text-center">
+                <span className="text-4xl font-mono font-bold text-teal-950 block">
+                  {Math.floor(workoutSeconds / 60)}:{(workoutSeconds % 60).toString().padStart(2, '0')}
+                </span>
+                <div className="flex justify-center gap-3">
+                  <button onClick={() => setWorkoutActive(!workoutActive)} className={`px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md ${workoutActive ? 'bg-rose-600' : 'bg-teal-600'}`}>
+                    {workoutActive ? 'Pause Workout' : 'Start Workout'}
+                  </button>
+                  <button onClick={() => { setWorkoutActive(false); setWorkoutSeconds(0); }} className="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reminders' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Reminders</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-3">
+                {remindersList.map(rem => (
+                  <div key={rem.id} className="flex items-center justify-between p-3 bg-teal-50/30 rounded-xl border border-teal-100">
+                    <div>
+                      <p className="text-xs font-bold text-teal-950">{rem.title}</p>
+                      <p className="text-[10px] text-slate-500">{rem.time}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${rem.active ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-500'}`}>
+                      {rem.active ? 'Active' : 'Paused'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bio-Patch Hardware Connection Tab */}
+          {activeTab === 'patch' && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Bio-Patch Hardware Connection</h1>
+                <p className="text-xs text-slate-500">Pair your wearable bio-patch via Bluetooth to sync sensor metrics in real-time.</p>
+              </div>
+
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
+                <div className="flex items-center justify-between p-4 bg-teal-50/50 rounded-xl border border-teal-100">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-3xl">🩹</span>
+                    <div>
+                      <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Device Status</h3>
+                      <p className="text-xs font-semibold text-teal-700 capitalize">
+                        {patchStatus === 'connected' ? `🟢 Connected (${connectedDevice})` : patchStatus === 'scanning' ? '🔄 Scanning for nearby devices...' : '🔴 Disconnected'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {patchStatus === 'connected' && (
+                    <span className="text-xs font-mono font-bold bg-teal-200/60 text-teal-900 px-2.5 py-1 rounded-lg">
+                      Battery: {patchBattery}%
+                    </span>
+                  )}
+                </div>
+
+                {patchStatus === 'connected' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
+                      <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Sensor Heart Rate</span>
+                      <span className="text-xl font-bold text-teal-950">{sensorHeartRate} BPM ❤️</span>
+                    </div>
+                    <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
+                      <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Transdermal Flux</span>
+                      <span className="text-xl font-bold text-teal-950">Normal ⚡</span>
+                    </div>
+                  </div>
+                )}
+
+                {patchStatus === 'disconnected' && (
+                  <button 
+                    onClick={handleConnectPatch}
+                    className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>📶</span> Scan & Connect Bio-Patch
+                  </button>
+                )}
+
+                {patchStatus === 'scanning' && (
+                  <button 
+                    disabled
+                    className="w-full py-3 bg-teal-400 text-white rounded-xl text-xs font-bold shadow-md cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <span>⏳</span> Searching for Bluetooth Devices...
+                  </button>
+                )}
+
+                {patchStatus === 'connected' && (
+                  <button 
+                    onClick={handleDisconnectPatch}
+                    className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+                  >
+                    Disconnect Patch
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'doctor' && currentUser?.role === 'patient' && (
+            <div className="space-y-6 max-w-xl">
+              <h2 className="text-xl font-bold text-teal-950">Doctor Chat & Portal</h2>
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <p className="text-xs text-slate-500">Secure messaging channel linked with your attending physician.</p>
+                <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100 space-y-3">
+                  <p className="text-xs font-bold text-teal-950">Dr. Sarah Chen</p>
+                  <p className="text-xs text-slate-600">"Remember to log your daily patch metrics before your next consultation."</p>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
-
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-teal-200 z-50 md:hidden flex justify-around items-center py-2 px-1 shadow-lg">
-          {navTabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={isActive ? "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-teal-700 font-bold" : "flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-colors text-slate-400 hover:text-slate-700"}
-              >
-                <span className="text-lg">{tab.mobileIcon}</span>
-                <span className="text-[10px] mt-0.5 truncate">{tab.shortLabel}</span>
-              </button>
-            );
-          })}
-        </nav>
-
       </div>
     </div>
   );
