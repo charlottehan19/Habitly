@@ -186,7 +186,7 @@ export default function App() {
   const navTabs = [
     { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊', shortLabel: 'Home' },
     { id: 'habits', label: '✅ Daily Habits', mobileIcon: '✅', shortLabel: 'Habits' },
-    { id: 'mood', label: '😊 Mood Tracker', mobileIcon: '😊', shortLabel: 'Mood' },
+    { id: 'mood', label: '😊 Mood Tracker & Diary', mobileIcon: '😊', shortLabel: 'Mood' },
     { id: 'substance', label: '💧 Intake & Patch', mobileIcon: '💧', shortLabel: 'Intake' },
     { id: 'nutrition', label: '🥗 Food Scanner', mobileIcon: '🥗', shortLabel: 'Food' },
     { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
@@ -404,19 +404,43 @@ export default function App() {
 
           {activeTab === 'mood' && (
             <div className="space-y-6 max-w-xl">
-              <h2 className="text-xl font-bold text-teal-950">Mood Tracker</h2>
+              <h2 className="text-xl font-bold text-teal-950">Mood Tracker & Diary</h2>
               <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
                 <p className="text-xs font-semibold text-slate-600">How are you feeling today?</p>
-                <div className="flex gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {['😊 Great', '😐 Neutral', '😔 Low', '⚡ Energetic'].map(m => (
                     <button
                       key={m}
                       onClick={() => { setTodayMood(m); setMoodCheckedInToday(true); }}
-                      className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-all ${todayMood === m ? 'bg-teal-600 text-white border-teal-600' : 'bg-teal-50/40 text-teal-900 border-teal-200'}`}
+                      className={`py-3 rounded-xl text-xs font-bold border transition-all ${todayMood === m ? 'bg-teal-600 text-white border-teal-600' : 'bg-teal-50/40 text-teal-900 border-teal-200'}`}
                     >
                       {m}
                     </button>
                   ))}
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <label className="block text-xs font-semibold text-teal-900">Daily Diary / Journal Note</label>
+                  <textarea
+                    value={journalNote}
+                    onChange={(e) => setJournalNote(e.target.value)}
+                    placeholder="Write your thoughts, reflections, or notes for today..."
+                    rows={3}
+                    className="w-full p-3 bg-teal-50/30 border border-teal-200 rounded-xl focus:outline-none focus:border-teal-600 text-slate-800 text-xs"
+                  />
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => {
+                        setJournalSaved(true);
+                        setNotificationBanner('📓 Diary entry saved successfully!');
+                        setTimeout(() => setNotificationBanner(null), 3000);
+                      }}
+                      className="py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                    >
+                      Save Diary Entry
+                    </button>
+                    {journalSaved && <span className="text-[10px] text-teal-700 font-semibold ml-3">Saved! ✓</span>}
+                  </div>
                 </div>
               </div>
             </div>
@@ -454,6 +478,7 @@ export default function App() {
           {activeTab === 'exercise' && (
             <div className="space-y-6 max-w-xl">
               <h2 className="text-xl font-bold text-teal-950">Exercise Planner & Stopwatch</h2>
+              
               <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4 text-center">
                 <span className="text-4xl font-mono font-bold text-teal-950 block">
                   {Math.floor(workoutSeconds / 60)}:{(workoutSeconds % 60).toString().padStart(2, '0')}
@@ -467,22 +492,127 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-sm font-bold text-teal-950">Log Custom Workout</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Workout Type (e.g. Cycling)"
+                    value={newCustomWorkoutType}
+                    onChange={(e) => setNewCustomWorkoutType(e.target.value)}
+                    className="w-full px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Duration (e.g. 30 mins)"
+                    value={newCustomWorkoutDuration}
+                    onChange={(e) => setNewCustomWorkoutDuration(e.target.value)}
+                    className="w-full px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (!newCustomWorkoutType || !newCustomWorkoutDuration) return;
+                    const newWorkout = {
+                      id: Date.now(),
+                      type: newCustomWorkoutType,
+                      duration: newCustomWorkoutDuration,
+                      date: 'Today',
+                      calories: 150
+                    };
+                    setWorkoutHistory([newWorkout, ...workoutHistory]);
+                    setNewCustomWorkoutType('');
+                    setNewCustomWorkoutDuration('');
+                    setNotificationBanner('⏱️ Custom workout logged successfully!');
+                    setTimeout(() => setNotificationBanner(null), 3000);
+                  }}
+                  className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold"
+                >
+                  Add Workout
+                </button>
+
+                <div className="space-y-2 pt-2">
+                  <h4 className="text-xs font-bold text-teal-900 uppercase tracking-wider">Recent Workouts</h4>
+                  {workoutHistory.map(w => (
+                    <div key={w.id} className="flex justify-between items-center p-3 bg-teal-50/30 rounded-xl border border-teal-100 text-xs">
+                      <div>
+                        <p className="font-bold text-teal-950">{w.type}</p>
+                        <p className="text-[10px] text-slate-500">{w.date} • {w.duration}</p>
+                      </div>
+                      <span className="font-bold text-teal-800">{w.calories} kcal</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab === 'reminders' && (
             <div className="space-y-6 max-w-xl">
-              <h2 className="text-xl font-bold text-teal-950">Reminders</h2>
+              <h2 className="text-xl font-bold text-teal-950">Reminders & Notifications</h2>
+              
+              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-sm font-bold text-teal-950">Create Custom Reminder</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Reminder Title (e.g. Take Vitamins)"
+                    value={newReminderTitle}
+                    onChange={(e) => setNewReminderTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Time (e.g. 03:30 PM)"
+                    value={newReminderTime}
+                    onChange={(e) => setNewReminderTime(e.target.value)}
+                    className="w-full px-3 py-2 bg-teal-50/30 border border-teal-200 rounded-xl text-xs"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (!newReminderTitle || !newReminderTime) return;
+                    const newRem = {
+                      id: Date.now(),
+                      title: newReminderTitle,
+                      time: newReminderTime,
+                      active: true
+                    };
+                    setRemindersList([...remindersList, newRem]);
+                    setNewReminderTitle('');
+                    setNewReminderTime('');
+                    setNotificationBanner('⏰ Custom reminder added successfully!');
+                    setTimeout(() => setNotificationBanner(null), 3000);
+                  }}
+                  className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold"
+                >
+                  Add Reminder
+                </button>
+              </div>
+
               <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-3">
+                <h3 className="text-sm font-bold text-teal-950">Active Reminders</h3>
                 {remindersList.map(rem => (
                   <div key={rem.id} className="flex items-center justify-between p-3 bg-teal-50/30 rounded-xl border border-teal-100">
                     <div>
                       <p className="text-xs font-bold text-teal-950">{rem.title}</p>
                       <p className="text-[10px] text-slate-500">{rem.time}</p>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${rem.active ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-500'}`}>
-                      {rem.active ? 'Active' : 'Paused'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setRemindersList(remindersList.map(r => r.id === rem.id ? { ...r, active: !r.active } : r))}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${rem.active ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-500'}`}
+                      >
+                        {rem.active ? 'Active' : 'Paused'}
+                      </button>
+                      <button
+                        onClick={() => setRemindersList(remindersList.filter(r => r.id !== rem.id))}
+                        className="text-rose-500 hover:text-rose-700 text-xs font-bold p-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
