@@ -25,7 +25,10 @@ export default function App() {
   const [password, setPassword] = useState('');
   
   const [enteredDoctorCode, setEnteredDoctorCode] = useState('');
-
+const [patchStatus, setPatchStatus] = useState('disconnected');
+  const [connectedDevice, setConnectedDevice] = useState(null);
+  const [patchBattery, setPatchBattery] = useState(null);
+  const [sensorHeartRate, setSensorHeartRate] = useState(72);
   const generateDoctorCode = () => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     return `HABITLY-DR-${randomNum}`;
