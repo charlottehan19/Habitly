@@ -61,11 +61,6 @@ export default function App() {
   const [nicotineToday, setNicotineToday] = useState(8);
   const [alcoholToday, setAlcoholToday] = useState(0);
 
-  // AI Report States
-  const [aiReportGenerating, setAiReportGenerating] = useState(false);
-  const [aiReportGenerated, setAiReportGenerated] = useState(false);
-  const [aiReportData, setAiReportData] = useState(null);
-
   // Habits & Reminders States
   const [habitsList, setHabitsList] = useState([
     { id: 1, name: 'Morning Bio-Patch Check', completed: true },
@@ -73,7 +68,6 @@ export default function App() {
     { id: 3, name: '15-minute Walk / Exercise', completed: false },
     { id: 4, name: 'Evening Mindfulness Reflection', completed: false }
   ]);
-  const [newHabitName, setNewHabitName] = useState('');
 
   const [remindersList, setRemindersList] = useState([
     { id: 1, title: 'Drink Water', time: '10:00 AM', active: true },
@@ -84,14 +78,10 @@ export default function App() {
   const [newReminderTime, setNewReminderTime] = useState('');
 
   // Food Scanner States
-  const [selectedImage, setSelectedImage] = useState(null);
   const [imageFileName, setImageFileName] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(null);
 
   // Exercise Planner States
   const [workoutActive, setWorkoutActive] = useState(false);
-  const [workoutType, setWorkoutType] = useState('Running');
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
   const [workoutHistory, setWorkoutHistory] = useState([
     { id: 1, type: 'Cardio / Jogging', duration: '25 mins', date: 'Yesterday', calories: 240 },
@@ -100,22 +90,36 @@ export default function App() {
   const [newCustomWorkoutType, setNewCustomWorkoutType] = useState('');
   const [newCustomWorkoutDuration, setNewCustomWorkoutDuration] = useState('');
 
-  // Doctor & Patient Messaging States
-  const [patientsList, setPatientsList] = useState([
+  // Doctor & Patient Interactive Chat States
+  const [patientMessages, setPatientMessages] = useState([
+    { id: 1, sender: 'doctor', text: 'Hello! How is your bio-patch adhesion holding up today?', time: '09:30 AM' },
+    { id: 2, sender: 'patient', text: 'Going great! Levels feel steady.', time: '10:15 AM' }
+  ]);
+  const [patientInputText, setPatientInputText] = useState('');
+
+  const [doctorPatients, setDoctorPatients] = useState([
     {
       id: 1,
       name: 'Alex Johnson',
       email: 'alex@example.com',
-      metrics: { water: '1,200 ml', nicotine: '8 mg', stress: 'Low' },
+      metrics: { water: '1,200 ml', nicotine: '8 mg', stress: '30%' },
       messages: [
         { sender: 'doctor', text: 'Hello Alex, how is your patch adhesion holding up?', time: 'Yesterday 09:30 AM' },
         { sender: 'patient', text: 'Going great! Levels feel steady.', time: 'Yesterday 10:15 AM' }
       ]
+    },
+    {
+      id: 2,
+      name: 'Emma Watson',
+      email: 'emma@example.com',
+      metrics: { water: '1,800 ml', nicotine: '2 mg', stress: '15%' },
+      messages: [
+        { sender: 'patient', text: 'Hi Dr. Chen, feeling much better today!', time: 'Today 08:00 AM' }
+      ]
     }
   ]);
   const [selectedPatientId, setSelectedPatientId] = useState(1);
-  const [doctorInputMessage, setDoctorInputMessage] = useState('');
-  const [patientInputMessage, setPatientInputMessage] = useState('');
+  const [doctorInputText, setDoctorInputText] = useState('');
 
   // Timer Effect for Workouts
   useEffect(() => {
@@ -181,19 +185,19 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
-  const currentPatientData = patientsList.find(p => p.name === currentUser?.name) || patientsList[0];
-
   const navTabs = [
-    { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊', shortLabel: 'Home' },
-    { id: 'habits', label: '✅ Daily Habits', mobileIcon: '✅', shortLabel: 'Habits' },
-    { id: 'mood', label: '😊 Mood Tracker & Diary', mobileIcon: '😊', shortLabel: 'Mood' },
-    { id: 'substance', label: '💧 Intake & Patch', mobileIcon: '💧', shortLabel: 'Intake' },
-    { id: 'nutrition', label: '🥗 Food Scanner', mobileIcon: '🥗', shortLabel: 'Food' },
-    { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
-    { id: 'reminders', label: '⏰ Reminders', mobileIcon: '⏰', shortLabel: 'Reminders' },
-    { id: 'patch', label: '🩹 Patch Connection', mobileIcon: '🩹', shortLabel: 'Patch' },
-    currentUser?.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
-  ].filter(Boolean);
+    { id: 'dashboard', label: '📊 Dashboard', mobileIcon: '📊' },
+    { id: 'habits', label: '✅ Daily Habits', mobileIcon: '✅' },
+    { id: 'mood', label: '😊 Mood Tracker & Diary', mobileIcon: '😊' },
+    { id: 'substance', label: '💧 Intake & Patch', mobileIcon: '💧' },
+    { id: 'nutrition', label: '🥗 Food Scanner', mobileIcon: '🥗' },
+    { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️' },
+    { id: 'reminders', label: '⏰ Reminders', mobileIcon: '⏰' },
+    { id: 'patch', label: '🩹 Patch Connection', mobileIcon: '🩹' },
+    role === 'doctor' 
+      ? { id: 'doctorChat', label: '🩺 Doctor Portal', mobileIcon: '🩺' }
+      : { id: 'doctorChat', label: '🩺 Doctor Chat', mobileIcon: '🩺' }
+  ];
 
   if (!currentUser) {
     return (
@@ -689,16 +693,155 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'doctor' && currentUser?.role === 'patient' && (
-            <div className="space-y-6 max-w-xl">
-              <h2 className="text-xl font-bold text-teal-950">Doctor Chat & Portal</h2>
-              <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm space-y-4">
-                <p className="text-xs text-slate-500">Secure messaging channel linked with your attending physician.</p>
-                <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100 space-y-3">
-                  <p className="text-xs font-bold text-teal-950">Dr. Sarah Chen</p>
-                  <p className="text-xs text-slate-600">"Remember to log your daily patch metrics before your next consultation."</p>
+          {/* Interactive Doctor Chat / Doctor Portal Tab */}
+          {activeTab === 'doctorChat' && (
+            <div className="space-y-6 max-w-3xl">
+              <h2 className="text-xl font-bold text-teal-950">
+                {role === 'doctor' ? '🩺 Doctor Patient Portal & Chat' : '🩺 Secure Doctor Chat'}
+              </h2>
+
+              {role === 'doctor' ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white border border-teal-100 rounded-2xl p-4 shadow-sm space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800">Your Patients</h3>
+                    {doctorPatients.map(patient => (
+                      <button
+                        key={patient.id}
+                        onClick={() => setSelectedPatientId(patient.id)}
+                        className={`w-full text-left p-3 rounded-xl text-xs font-bold transition-all border ${
+                          selectedPatientId === patient.id 
+                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm' 
+                            : 'bg-teal-50/40 text-teal-950 border-teal-100 hover:bg-teal-50'
+                        }`}
+                      >
+                        <p>{patient.name}</p>
+                        <p className={`text-[10px] font-normal ${selectedPatientId === patient.id ? 'text-teal-100' : 'text-slate-500'}`}>{patient.email}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="md:col-span-2 bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col h-[500px]">
+                    {(() => {
+                      const activePatient = doctorPatients.find(p => p.id === selectedPatientId) || doctorPatients[0];
+                      return (
+                        <>
+                          <div className="border-b border-teal-100 pb-3 mb-4 flex justify-between items-center">
+                            <div>
+                              <h3 className="text-xs font-bold text-teal-950">{activePatient.name}</h3>
+                              <p className="text-[10px] text-slate-500">Water: {activePatient.metrics.water} | Nicotine: {activePatient.metrics.nicotine} | Stress: {activePatient.metrics.stress}</p>
+                            </div>
+                            <span className="text-[10px] bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full font-semibold">Live Metrics Synced</span>
+                          </div>
+
+                          <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+                            {activePatient.messages.map((msg, index) => (
+                              <div key={index} className={`flex flex-col ${msg.sender === 'doctor' ? 'items-end' : 'items-start'}`}>
+                                <div className={`max-w-[80%] p-3 rounded-2xl text-xs ${msg.sender === 'doctor' ? 'bg-teal-600 text-white rounded-br-none' : 'bg-teal-50 text-teal-950 border border-teal-100 rounded-bl-none'}`}>
+                                  {msg.text}
+                                </div>
+                                <span className="text-[9px] text-slate-400 mt-1">{msg.time}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={doctorInputText}
+                              onChange={(e) => setDoctorInputText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && doctorInputText.trim()) {
+                                  const updated = doctorPatients.map(p => {
+                                    if (p.id === activePatient.id) {
+                                      return {
+                                        ...p,
+                                        messages: [...p.messages, { sender: 'doctor', text: doctorInputText, time: 'Just now' }]
+                                      };
+                                    }
+                                    return p;
+                                  });
+                                  setDoctorPatients(updated);
+                                  setDoctorInputText('');
+                                }
+                              }}
+                              placeholder="Type a message to patient..."
+                              className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs focus:outline-none focus:border-teal-600"
+                            />
+                            <button
+                              onClick={() => {
+                                if (!doctorInputText.trim()) return;
+                                const updated = doctorPatients.map(p => {
+                                  if (p.id === activePatient.id) {
+                                    return {
+                                      ...p,
+                                      messages: [...p.messages, { sender: 'doctor', text: doctorInputText, time: 'Just now' }]
+                                    };
+                                  }
+                                  return p;
+                                });
+                                setDoctorPatients(updated);
+                                setDoctorInputText('');
+                              }}
+                              className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm"
+                            >
+                              Send
+                            </button>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm flex flex-col h-[500px]">
+                  <div className="border-b border-teal-100 pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xs font-bold text-teal-950">Dr. Sarah Chen</h3>
+                      <p className="text-[10px] text-slate-500">Attending Physician • Habitly Medical Network</p>
+                    </div>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">Online</span>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+                    {patientMessages.map((msg, index) => (
+                      <div key={index} className={`flex flex-col ${msg.sender === 'patient' ? 'items-end' : 'items-start'}`}>
+                        <div className={`max-w-[80%] p-3 rounded-2xl text-xs ${msg.sender === 'patient' ? 'bg-teal-600 text-white rounded-br-none' : 'bg-teal-50 text-teal-950 border border-teal-100 rounded-bl-none'}`}>
+                          {msg.text}
+                        </div>
+                        <span className="text-[9px] text-slate-400 mt-1">{msg.time}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={patientInputText}
+                      onChange={(e) => setPatientInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && patientInputText.trim()) {
+                          const newMsg = { sender: 'patient', text: patientInputText, time: 'Just now' };
+                          setPatientMessages([...patientMessages, newMsg]);
+                          setPatientInputText('');
+                        }
+                      }}
+                      placeholder="Message your doctor..."
+                      className="flex-1 px-4 py-2.5 bg-teal-50/30 border border-teal-200 rounded-xl text-xs focus:outline-none focus:border-teal-600"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!patientInputText.trim()) return;
+                        const newMsg = { sender: 'patient', text: patientInputText, time: 'Just now' };
+                        setPatientMessages([...patientMessages, newMsg]);
+                        setPatientInputText('');
+                      }}
+                      className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
