@@ -579,6 +579,7 @@ const [patchStatus, setPatchStatus] = useState('disconnected');
     { id: 'exercise', label: '⏱️ Exercise Planner', mobileIcon: '⏱️', shortLabel: 'Exercise' },
     { id: 'reminders', label: '⏰ Reminders', mobileIcon: '⏰', shortLabel: 'Reminders' },
     currentUser.role === 'patient' ? { id: 'doctor', label: '🩺 Doctor Chat', mobileIcon: '🩺', shortLabel: 'Doctor' } : null
+    { id: 'patch', label: '🩹 Patch Connection', mobileIcon: '🩹', shortLabel: 'Patch' },
   ].filter(Boolean);
 
   return (
@@ -934,7 +935,74 @@ const [patchStatus, setPatchStatus] = useState('disconnected');
                 </div>
               </div>
             )}
+{activeTab === 'patch' && (
+  <div className="space-y-6">
+    <div>
+      <h1 className="text-xl sm:text-2xl font-bold mb-2 text-teal-950 tracking-wide">Bio-Patch Hardware Connection</h1>
+      <p className="text-xs text-slate-500">Pair your wearable bio-patch via Bluetooth to sync sensor metrics in real-time.</p>
+    </div>
 
+    <div className="bg-white border border-teal-100 rounded-2xl p-6 shadow-sm max-w-xl space-y-6">
+      <div className="flex items-center justify-between p-4 bg-teal-50/50 rounded-xl border border-teal-100">
+        <div className="flex items-center space-x-3">
+          <span className="text-3xl">🩹</span>
+          <div>
+            <h3 className="font-bold text-xs text-teal-950 uppercase tracking-wider">Device Status</h3>
+            <p className="text-xs font-semibold text-teal-700 capitalize">
+              {patchStatus === 'connected' ? `🟢 Connected (${connectedDevice})` : patchStatus === 'scanning' ? '🔄 Scanning for nearby devices...' : '🔴 Disconnected'}
+            </p>
+          </div>
+        </div>
+        
+        {patchStatus === 'connected' && (
+          <span className="text-xs font-mono font-bold bg-teal-200/60 text-teal-900 px-2.5 py-1 rounded-lg">
+            Battery: {patchBattery}%
+          </span>
+        )}
+      </div>
+
+      {patchStatus === 'connected' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
+            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Sensor Heart Rate</span>
+            <span className="text-xl font-bold text-teal-950">{sensorHeartRate} BPM ❤️</span>
+          </div>
+          <div className="p-4 bg-teal-50/30 rounded-xl border border-teal-100">
+            <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider block">Transdermal Flux</span>
+            <span className="text-xl font-bold text-teal-950">Normal ⚡</span>
+          </div>
+        </div>
+      )}
+
+      {patchStatus === 'disconnected' && (
+        <button 
+          onClick={handleConnectPatch}
+          className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          <span>📶</span> Scan & Connect Bio-Patch
+        </button>
+      )}
+
+      {patchStatus === 'scanning' && (
+        <button 
+          disabled
+          className="w-full py-3 bg-teal-400 text-white rounded-xl text-xs font-bold shadow-md cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <span>⏳</span> Searching for Bluetooth Devices...
+        </button>
+      )}
+
+      {patchStatus === 'connected' && (
+        <button 
+          onClick={handleDisconnectPatch}
+          className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+        >
+          Disconnect Patch
+        </button>
+      )}
+    </div>
+  </div>
+)}
             {activeTab === 'exercise' && (
               <div className="space-y-6">
                 <div>
