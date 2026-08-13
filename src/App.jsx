@@ -200,8 +200,10 @@ export default function App() {
       <div className="min-h-screen bg-teal-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl p-8 shadow-xl max-w-md w-full border border-teal-100">
           <div className="text-center mb-6">
-            <span className="text-4xl">🌱</span>
-            <h1 className="text-2xl font-bold text-teal-950 mt-2">Habitly Portal</h1>
+            <div className="w-16 h-16 bg-teal-600 rounded-2xl mx-auto flex items-center justify-center text-white text-3xl shadow-md mb-3">
+              🌱
+            </div>
+            <h1 className="text-2xl font-bold text-teal-950 mt-2">Habitly</h1>
             <p className="text-xs text-slate-500 mt-1">Smart Biometric Tracking & Wellness Assistant</p>
           </div>
 
@@ -292,7 +294,9 @@ export default function App() {
       <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-teal-100 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-teal-100 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl">🌱</span>
+            <div className="w-9 h-9 bg-teal-600 rounded-xl flex items-center justify-center text-white text-lg shadow-sm">
+              🌱
+            </div>
             <div>
               <h2 className="font-bold text-teal-950 text-sm">Habitly</h2>
               <span className="text-[10px] font-semibold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full capitalize">{currentUser.role} Portal</span>
