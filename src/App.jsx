@@ -134,45 +134,113 @@ export default function App() {
     return () => clearInterval(interval);
   }, [workoutActive]);
 
-  // Bluetooth & Simulation Handlers
-  const handleConnectPatch = async () => {
-    setPatchStatus('scanning');
-    try {
-      if (navigator.bluetooth) {
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['battery_service']
-        });
-        setConnectedDevice(device.name || 'Habitly Bio-Patch');
-        setPatchStatus('connected');
-       const value = await batteryCharacteristic.readValue();
-const batteryLevel = value.getUint8(0);
-const server = await device.gatt.connect();
+// Bluetooth Connection Handler
+const handleConnectPatch = async () => {
+  setPatchStatus('scanning');
 
-        setNotificationBanner(`🔗 Successfully connected to ${device.name || 'Bio-Patch'}!`);
-        setTimeout(() => setNotificationBanner(null), 4000);
-        return;
-      }
-    } catch (err) {
-      console.log('Bluetooth unavailable or cancelled, using simulation mode:', err);
+  try {
+    if (!navigator.bluetooth) {
+      throw new Error(
+        'Web Bluetooth is not supported by this browser.'
+      );
     }
 
-    setTimeout(() => {
-      setConnectedDevice('Habitly Bio-Patch v2.4');
-      setPatchStatus('connected');
-      setPatchBattery(88);
-      setNotificationBanner('🔗 Simulated Bio-Patch Connected Successfully!');
-      setTimeout(() => setNotificationBanner(null), 4000);
-    }, 2000);
-  };
+    // Open the browser's REAL Bluetooth device picker
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['battery_service']
+    });
 
-  const handleDisconnectPatch = () => {
+    console.log('Bluetooth device selected:', device.name);
+    console.log('Bluetooth device ID:', device.id);
+
+    // Connect to the actual Bluetooth GATT server
+    const server = await device.gatt.connect();
+
+    console.log('Bluetooth GATT connected:', server.connected);
+
+    setConnectedDevice(device.name || 'Bluetooth Bio-Patch');
+    setPatchStatus('connected');
+
+    // Try to read the ACTUAL battery level
+    try {
+      const batteryService =
+        await server.getPrimaryService('battery_service');
+
+      const batteryCharacteristic =
+        await batteryService.getCharacteristic('battery_level');
+
+      const batteryValue =
+        await batteryCharacteristic.readValue();
+
+      const batteryLevel = batteryValue.getUint8(0);
+
+      console.log('Actual battery level:', batteryLevel);
+
+      setPatchBattery(batteryLevel);
+    } catch (batteryError) {
+      console.warn(
+        'Could not read battery level:',
+        batteryError
+      );
+
+      // Don't generate fake battery data
+      setPatchBattery(null);
+    }
+
+    setNotificationBanner(
+      `🔗 Successfully connected to ${
+        device.name || 'Bluetooth Bio-Patch'
+      }!`
+    );
+
+    setTimeout(() => {
+      setNotificationBanner(null);
+    }, 4000);
+
+    // Listen for the REAL device disconnecting
+    device.addEventListener(
+      'gattserverdisconnected',
+      () => {
+        console.log('Bluetooth device disconnected');
+
+        setPatchStatus('disconnected');
+        setConnectedDevice(null);
+        setPatchBattery(null);
+
+        setNotificationBanner(
+          '🔌 Bio-Patch disconnected'
+        );
+
+        setTimeout(() => {
+          setNotificationBanner(null);
+        }, 4000);
+      }
+    );
+
+  } catch (err) {
+    console.error('Bluetooth connection failed:', err);
+
     setPatchStatus('disconnected');
     setConnectedDevice(null);
     setPatchBattery(null);
-    setNotificationBanner('🔌 Bio-Patch Disconnected.');
-    setTimeout(() => setNotificationBanner(null), 4000);
-  };
+
+    if (err.name === 'NotFoundError') {
+      setNotificationBanner(
+        'Bluetooth device selection cancelled.'
+      );
+    } else {
+      setNotificationBanner(
+        `Bluetooth connection failed: ${err.message}`
+      );
+    }
+
+    setTimeout(() => {
+      setNotificationBanner(null);
+    }, 4000);
+  }
+};
+
 
   const handleAuthSubmit = (e) => {
     e.preventDefault();
