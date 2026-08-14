@@ -145,7 +145,10 @@ export default function App() {
         });
         setConnectedDevice(device.name || 'Habitly Bio-Patch');
         setPatchStatus('connected');
-        setPatchBattery(Math.floor(65 + Math.random() * 35));
+       const value = await batteryCharacteristic.readValue();
+const batteryLevel = value.getUint8(0);
+const server = await device.gatt.connect();
+
         setNotificationBanner(`🔗 Successfully connected to ${device.name || 'Bio-Patch'}!`);
         setTimeout(() => setNotificationBanner(null), 4000);
         return;
